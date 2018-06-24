@@ -1,4 +1,4 @@
 all:
-	g++ -O3 -fopenmp l.cpp -std=c++11 -o l
+	g++ -O3 -fopenmp pl.cpp -std=c++11 -o pl
 clean:
-	rm l
+	rm pl
