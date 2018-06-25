@@ -14,7 +14,7 @@ int main(int argc, char *argv[]){
 	// set seed
 	seed = 0;
 	srand(seed);
-#pragma omp parallel num_threads(1)
+#pragma omp parallel num_threads(2)
 {
 	Process process = Process(setB, setI,setD);
 	//process.printOptions();

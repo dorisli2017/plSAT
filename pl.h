@@ -27,7 +27,7 @@
 #include <stdlib.h>
 using namespace std;
 const vector<bool> setB= {true};
-const vector<int> setI= {1,INT_MAX,2,1,100,0,50};
+const vector<int> setI= {INT_MAX,1,2,1,100,0,50};
 const vector<double> setD = {3.6, 1.0,0.5};
 /*problem and assignment*/
 char* fileName;
