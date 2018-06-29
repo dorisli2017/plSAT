@@ -29,9 +29,9 @@
 #include <functional>
 using namespace std;
 
-const vector<vector<bool>> setBB= {{true},{true}};
+const vector<vector<bool>> setBB= {{false},{false}};
 // maxFlips, maxSteps,fct,ict,rct1,rct2,cct,gen,seed
-const vector<vector<int>> setII= {{1,INT_MAX,2,1,100,0,50,10,0}, {1,INT_MAX,2,1,100,0,50,10,0}};
+const vector<vector<int>> setII= {{INT_MAX,1,2,1,100,0,50,10,0}, {INT_MAX,1,2,1,100,0,50,1,0}};
 const vector<vector<double>> setDD = {{3.6, 1.0,0.5},{3.6, 1.0,0.5}};
 
 
