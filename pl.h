@@ -40,7 +40,6 @@ char* fileName;
 int numCs;
 int numVs;
 vector<int>* clauses;
-struct V *variables;
 vector<int>* posC;
 vector<int>* negC;
 int* posOc;
@@ -65,6 +64,7 @@ void printUsage();
 
 template<class T>
 class Process{
+	uniform_int_distribution<int> distribution;
 	int seed;
 	int* numP;
 	vector<int> unsatCs;

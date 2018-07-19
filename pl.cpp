@@ -97,6 +97,7 @@ void Process<T>::debugAssign(){
 template<class T>
 Process<T>::Process(const vector<bool>& setB, const vector<int>& setI,const vector<double>& setD){
 	parseOptions(setB, setI,setD);
+	distribution = uniform_int_distribution<int>(0,INT_MAX);
 	//set the parameters
 	   // set tabuS
 	if(setI[7] == 10){
@@ -416,7 +417,7 @@ void Process<T>::optimal(){
 					//test();
 					cout<< "s SATISFIABLE"<< endl;
 					//printAssignment();
-					return;
+					abort();
 				}
 				search_prob();
 			}
