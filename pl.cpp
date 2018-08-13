@@ -10,7 +10,8 @@
 int main(int argc, char *argv[]){
 	fileName = argv[1];
 	readFile(fileName);
-int tid;
+	debugProblem();
+/*int tid;
 #pragma omp parallel num_threads(2) private(tid)
  {
 	tid = omp_get_thread_num();
@@ -73,6 +74,7 @@ int tid;
 	//debugProblem();
 	//process.printOptions();
 }	//process.debugAssign();
+*/
 }
 void debugProblem(){
 	printVariables();
