@@ -17,10 +17,9 @@ int tid;
 	const vector<bool>setB = setBB[tid];
 	const vector<int> setI =setII[tid];
 	const vector<double>& setD = setDD[tid];
-	switch(setI[7]){
+	switch(setI[3]){
 	case 0:{
 		Process<minstd_rand0> process (setB, setI,setD);
-		process.debugAssign();
 		process.optimal();
 		break;
 	}
@@ -72,7 +71,7 @@ int tid;
 	}
 	//randTest();
 	//debugProblem();
-	//process.printOptions();
+	//process.printOptions()
 }	//process.debugAssign();
 }
 void debugProblem(){
@@ -114,12 +113,8 @@ Process<T>::Process(const vector<bool>& setB, const vector<int>& setI,const vect
 	numP = (int*) malloc(sizeof(int) * numCs);
 	probs = (double*)malloc(sizeof(double) * numVs);
 	assign = (bool*)malloc(sizeof(bool) * numVs);
-	//set inititial assignment
-	switch(ict){
-	case 0:randomAssignment();break;
-	case 1:biasAssignment();break;
-	default: randomBiasAssignment();
-	}
+	unsat= new vector<int>[3];
+	biasAssignment();
 	//set lookuptable
 	switch (fct){
 	case 0:initLookUpTable_poly();
@@ -138,14 +133,10 @@ template<class T>
 void Process<T>::parseOptions(const vector<bool>& setB, const vector<int>& setI,const vector<double>& setD){
 	tabu_flag = setB[0];
 
-	maxFlips =setI[0];
-	maxSteps = setI[1];
-	fct= setI[2];
-	ict = setI[3];
-	rct1 = setI[4];
-	rct2 = setI[5];
-	cct= setI[6];
-	seed = setI[8];
+	maxSteps = setI[0];
+	fct= setI[1];
+	cct= setI[2];
+	seed = setI[4];
 	cb=setD[0];
 	eps= setD[1];
 	lct = setD[2];
@@ -167,7 +158,7 @@ void readFile(const char* fileName){
    	while(!fp.eof()){
 		//cout<<buff<<endl;
 		//todo:parseLine
-   		if(buff.empty()) break;
+   		if(buff.empty()) continue;
 		head =buff.at(0);
 		if(head == 'p'){
 			memAllocate(buff);
@@ -175,17 +166,17 @@ void readFile(const char* fileName){
 		}
 	  getline(fp,buff);
 	}
-	getline(fp,buff);
+	/*getline(fp,buff);
 	head =buff.at(0);
 	if(head == 'c'){
-	}
+	}*/
    	// Get the clauses
    	int index = -1;
    	int line = 0;
    	while(!fp.eof() && line < numCs){
    		index++;
 		getline(fp,buff);
-		if(buff.empty()) break;
+		if(buff.empty()) continue;
 		parseLine(buff, index);
 		line++;
    	}
@@ -211,7 +202,7 @@ void memAllocate(string buff){
 void parseLine(string line,int indexC){
 	char* str = strdup(line.c_str());
     const char s[2] = " ";
-    if( indexC == -1){
+   /* if( indexC == -1){
     	strtok(str, s);
 		numVs = atoi(strtok(NULL, s))+1;
 		numV1 = atoi(strtok(NULL, s))+1;
@@ -219,7 +210,17 @@ void parseLine(string line,int indexC){
 		numC1 = atoi(strtok(NULL, s));
 		numCc = atoi(strtok(NULL, s));
 		return;
-    }// for the p line
+    }// for partition file;*/
+    if( indexC == -1){
+    	strtok(str, s);
+    	strtok(NULL, s);
+		numVs = atoi(strtok(NULL, s))+1;
+		numV1 = numVs;
+		numCs = atoi(strtok(NULL, s));
+		numC1 = numCs;
+		numCc = numCs;
+		return;
+    }
     int lit;
     int size;
     int p;
@@ -256,13 +257,9 @@ template<class T>
 void Process<T>::printOptions(){
 	printf("localSAT options: \n");
 	cout<<"c tabu_flag: "<<tabu_flag<<endl;
-	cout<<"c maxFlips: "<<maxFlips<<endl;
 	cout<<"c maxSteps: "<<maxSteps<<endl;
 	cout<<"c seed: "<<seed<<endl;
 	cout<<"c fct: "<<fct<<endl;
-	cout<<"c ict: "<<ict<<endl;
-	cout<<"c rct1: "<<rct1<<endl;
-	cout<<"c rct2: "<<rct2<<endl;
 	cout<<"c cct: "<<cct<<endl;
 	cout<<"c cb: "<<cb<<endl;
 	cout<<"c eps: "<<eps<<endl;
@@ -310,7 +307,11 @@ void Process<T>::printAssignment(){
 template<class T>
 void Process<T>::printUnsatCs(){
 	cout<< "Unsatisfied clauses ";
-	printVector(unsatCs);
+	printVector(unsat[0]);
+	cout <<endl ;
+	printVector(unsat[1]);
+	cout <<endl ;
+	printVector(unsat[2]);
 	cout <<endl ;
 }
 template<class T>
@@ -393,39 +394,71 @@ void Process<T>::setAssignment(){
 			}
    		}
    	}
-   	for(int i = 0; i < numCs; i++){
+   	for(int i = 0; i < numC1; i++){
    		if(numP[i] == 0){
-   			unsatCs.push_back(i);
+   			unsat[0].push_back(i);
+   		}
+   	}
+   	for(int i = numC1; i < numCc; i++){
+   		if(numP[i] == 0){
+   			unsat[1].push_back(i);
+   		}
+   	}
+   	for(int i = numCc; i < numCs; i++){
+   		if(numP[i] == 0){
+   			unsat[2].push_back(i);
    		}
    	}
 }
-
+template<class T>
+void Process<T>::solvePart(int index){
+	vector<int>& unsatCs = unsat[index];
+	for(unsigned int j = 0; j < maxSteps; j++){
+		if (unsatCs.size()== 0){
+			return;
+		}
+		int size = unsatCs.size();
+		int randC = (this->*randINT)()%size;
+		int flipCindex = unsatCs[randC];
+		while(numP[flipCindex] > 0){
+			unsatCs[randC]=unsatCs.back();
+			unsatCs.pop_back();
+			size--;
+			if(size == 0) return;
+			randC = (this->*randINT)()%size;
+			flipCindex = unsatCs[randC];
+		}
+		int flipLindex = getFlipLiteral(flipCindex);
+		unsatCs[randC]=unsatCs.back();
+		unsatCs.pop_back();
+		flip(flipLindex);
+		if(tabu_flag) tabuS[abs(flipLindex)]++;
+	}
+	return;
+}
 template<class T>
 void Process<T>::optimal(){
 	int rct;
+	//check(get first unsat part)
+	//solveP0
+	//solveP1
+	//solveC
 	while(true){
-		for(unsigned int i = 0; i < maxFlips; i++){
-			for(unsigned int j = 0; j < maxSteps; j++){
-				if (unsatCs.size()== 0){
-					//debugAssign();
-					sat = true;
-					test();
-					cout<< "s SATISFIABLE"<< endl;
-					//printAssignment();
-					abort();
+			if (unsat[0].size()== 0 && unsat[1].size()== 0 && unsat[2].size()== 0){
+				#pragma omp critical
+				{
+				test();
 				}
-				search_prob();
+				cout<< "s SATISFIABLE"<< endl;
+				//printAssignment();
+				abort();
 			}
-			if(sat) return;
-		}
-		rct = (this->*randINT)()%100;
-		if(rct < rct1) randomAssignment();
-		else{
-			if(rct< rct2) biasAssignment();
-			else randomBiasAssignment();
-		}
+			solvePart(0);
+			solvePart(2);
+			solvePart(1);
 	}
 }
+
 template<class T>
 int Process<T>::getFlipLiteral(int cIndex){
 	vector<int>&  vList = clauses[cIndex];
@@ -468,7 +501,7 @@ void Process<T>::flip(int literal){
 	if(literal > 0){
    		for (i = negC[literal].begin()+3; i != negC[literal].end(); ++i){
    			numP[*i]--;
-   			if(numP[*i] == 0) unsatCs.push_back(*i);
+   			if(numP[*i] == 0) push(*i);
    		}
 		for (i = posC[literal].begin()+3; i != posC[literal].end(); ++i){
    			numP[*i]++;
@@ -482,7 +515,7 @@ void Process<T>::flip(int literal){
    		}
 		for (i = posC[-literal].begin()+3; i != posC[-literal].end(); ++i){
    			numP[*i]--;
-   			if(numP[*i] == 0) unsatCs.push_back(*i);
+   			if(numP[*i] == 0) push(*i);
 		}
 		assign[-literal]= false;
 	}
@@ -501,7 +534,10 @@ void Process<T>::test(){
    	while(!fp.eof()){
    		if(buff.empty()) break;
 		head =buff.at(0);
-		if(head == 'c'){
+		/*if(head == 'c'){
+			break;
+		}*/ // for partition file
+		if(head == 'p'){
 			break;
 		}
 	  getline(fp,buff);
@@ -538,6 +574,7 @@ void Process<T>::testLine(string line){
 		if(assign[lit] == true) numT++;
 		token = strtok(NULL, s);
     }
+    cout<< line;
 	perror("a clause line does not terminates");
 	exit(EXIT_FAILURE);
 
@@ -562,21 +599,6 @@ double Process<T>::func_exp(int literal){
 template<class T>
 double Process<T>::func_poly(int literal){
 	return pow((eps+computeBreakScore(literal)),-cb);
-}
-template<class T>
-void Process<T>::search_prob(){
-	int randC = (this->*randINT)()%unsatCs.size();
-	int flipCindex = unsatCs[randC];
-	if(numP[flipCindex] > 0){
-		unsatCs[randC]=unsatCs.back();
-		unsatCs.pop_back();
-		return;
-	}
-	int flipLindex = getFlipLiteral(flipCindex);
-	unsatCs[randC]=unsatCs.back();
-	unsatCs.pop_back();
-	flip(flipLindex);
-	if(tabu_flag) tabuS[abs(flipLindex)]++;
 }
 
 
@@ -656,4 +678,13 @@ template<class T>
 int Process<T>::randI2(){
 	return rand();
 };
+template<class T>
+void Process<T>::push(int cIndex){
+	if(cIndex < numC1) unsat[0].push_back(cIndex);
+	else{
+		if(cIndex < numCc) unsat[1].push_back(cIndex);
+		else unsat[2].push_back(cIndex);
+
+	}
+}
 

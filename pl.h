@@ -30,8 +30,8 @@
 using namespace std;
 
 const vector<vector<bool>> setBB= {{false},{false}};
-// maxFlips, maxSteps,fct,ict,rct1,rct2,cct,gen,seed
-const vector<vector<int>> setII= {{INT_MAX,1,2,1,100,0,50,10,0}, {INT_MAX,1,2,1,100,0,50,1,0}};
+//  maxSteps,fct,ict,cct,gen,seed
+const vector<vector<int>> setII= {{INT_MAX,2,100,10,0}, {INT_MAX,2,100,1,0}};
 const vector<vector<double>> setDD = {{3.6, 1.0,0.5},{3.6, 1.0,0.5}};
 
 
@@ -46,7 +46,6 @@ vector<int>* clauses;
 vector<int>* posC;
 vector<int>* negC;
 vector<int> clauseT;
-bool sat = false;
 uniform_int_distribution<int> distribution(0,INT_MAX);
 /*methods*/
 
@@ -67,7 +66,7 @@ class Process{
 	uniform_int_distribution<int> distribution;
 	int seed;
 	int* numP;
-	vector<int> unsatCs;
+	vector<int>* unsat;
 	double* probs;
 	bool* assign;
 	double* lookUpTable;
@@ -79,12 +78,8 @@ class Process{
 	/*option values*/
 
 
-	int maxFlips;
 	int maxSteps;
 	int fct;
-	int ict;
-	int rct1;
-	int rct2;
 	int cct;
 	double cb;
 	double eps;
@@ -102,7 +97,6 @@ public:
 	double (Process::*lookUp)(int)  = NULL;
 	void initLookUpTable_exp(void);
 	void initLookUpTable_poly(void);
-	void search_prob();
 	int getFlipLiteral(int cIndex);
 	void flip(int literal);
 	void biasAssignment();
@@ -119,5 +113,7 @@ public:
 	int (Process::*randINT)(void) = NULL;
 	int randI();
 	int randI2();
+	void solvePart(int index);
+	void push(int cIndex);
 };
 #endif /* MAIN_H_ */
