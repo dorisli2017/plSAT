@@ -13,7 +13,8 @@ int main(int argc, char *argv[]){
 int tid;
 #pragma omp parallel num_threads(2) private(tid)
  {
-	tid = omp_get_thread_num();
+	//tid = omp_get_thread_num();
+	tid = 0;
 	const vector<bool>setB = setBB[tid];
 	const vector<int> setI =setII[tid];
 	const vector<double>& setD = setDD[tid];
@@ -396,22 +397,26 @@ void Process<T>::setAssignment(){
    	}
    	for(int i = 0; i < numC1; i++){
    		if(numP[i] == 0){
+   			numUnsat++;
    			unsat[0].push_back(i);
    		}
    	}
    	for(int i = numC1; i < numCc; i++){
    		if(numP[i] == 0){
+ 			numUnsat++;
    			unsat[1].push_back(i);
    		}
    	}
    	for(int i = numCc; i < numCs; i++){
    		if(numP[i] == 0){
+ 			numUnsat++;
    			unsat[2].push_back(i);
    		}
    	}
 }
 template<class T>
 void Process<T>::solvePart(int index){
+	assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
 	vector<int>& unsatCs = unsat[index];
 	for(unsigned int j = 0; j < maxSteps; j++){
 		if (unsatCs.size()== 0){
@@ -424,6 +429,8 @@ void Process<T>::solvePart(int index){
 			unsatCs[randC]=unsatCs.back();
 			unsatCs.pop_back();
 			size--;
+ 			numUnsat--;
+ 			assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
 			if(size == 0) return;
 			randC = (this->*randINT)()%size;
 			flipCindex = unsatCs[randC];
@@ -431,9 +438,11 @@ void Process<T>::solvePart(int index){
 		int flipLindex = getFlipLiteral(flipCindex);
 		unsatCs[randC]=unsatCs.back();
 		unsatCs.pop_back();
+		numUnsat--;
 		flip(flipLindex);
 		if(tabu_flag) tabuS[abs(flipLindex)]++;
 	}
+
 	return;
 }
 template<class T>
@@ -444,18 +453,24 @@ void Process<T>::optimal(){
 	//solveP1
 	//solveC
 	while(true){
-			if (unsat[0].size()== 0 && unsat[1].size()== 0 && unsat[2].size()== 0){
-				#pragma omp critical
+			if (numUnsat == 0){
+				assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
+			/*	#pragma omp critical
 				{
 				test();
 				}
+			*/
 				cout<< "s SATISFIABLE"<< endl;
 				//printAssignment();
-				abort();
+				//abort();
+				return;
 			}
 			solvePart(0);
+			assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
 			solvePart(2);
+			assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
 			solvePart(1);
+			assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
 	}
 }
 
@@ -467,6 +482,11 @@ int Process<T>::getFlipLiteral(int cIndex){
 	int greedyLiteral = 0, randomLiteral;
 	for (std::vector<int>::const_iterator i = vList.begin(); i != vList.end(); ++i){
 		bre = computeBreakScore(*i);
+		if(bre == 0){
+			if (numUnsat < (this->*randINT)()){
+				return *i;
+			}
+		}
 		if(tabu_flag &&bre == 0 && tabuS[abs(*i)] == 0) return *i;
 		if(bre < min){
 			min = bre;
@@ -680,11 +700,15 @@ int Process<T>::randI2(){
 };
 template<class T>
 void Process<T>::push(int cIndex){
+	assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
+	numUnsat++;
 	if(cIndex < numC1) unsat[0].push_back(cIndex);
 	else{
 		if(cIndex < numCc) unsat[1].push_back(cIndex);
 		else unsat[2].push_back(cIndex);
 
 	}
+	assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
 }
+
 

@@ -1,5 +1,5 @@
 all:
-	g++ -O3 -fopenmp pl.cpp -std=c++11 -o pl
+	g++ -pg -O3 pl.cpp -std=c++11 -o pl
 clean:
 	rm pl
 # pl1 two threads no tabu (max 1)

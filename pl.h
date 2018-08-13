@@ -66,6 +66,7 @@ class Process{
 	uniform_int_distribution<int> distribution;
 	int seed;
 	int* numP;
+	int numUnsat = 0;
 	vector<int>* unsat;
 	double* probs;
 	bool* assign;
