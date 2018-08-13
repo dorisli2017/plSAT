@@ -10,8 +10,7 @@
 int main(int argc, char *argv[]){
 	fileName = argv[1];
 	readFile(fileName);
-	debugProblem();
-/*int tid;
+int tid;
 #pragma omp parallel num_threads(2) private(tid)
  {
 	tid = omp_get_thread_num();
@@ -21,6 +20,7 @@ int main(int argc, char *argv[]){
 	switch(setI[7]){
 	case 0:{
 		Process<minstd_rand0> process (setB, setI,setD);
+		process.debugAssign();
 		process.optimal();
 		break;
 	}
@@ -74,15 +74,10 @@ int main(int argc, char *argv[]){
 	//debugProblem();
 	//process.printOptions();
 }	//process.debugAssign();
-*/
 }
 void debugProblem(){
 	printVariables();
 	printClauses();
-	cout<< "Occurences:"<< endl;
-	for(int i = 1; i < numVs; i++){
-		cout<< i<< ":"<<posOc[i]<< " "<<negOc[i]<< endl;
-	}
 }
 template<class T>
 void Process<T>::debugAssign(){
@@ -116,7 +111,6 @@ Process<T>::Process(const vector<bool>& setB, const vector<int>& setI,const vect
 			tabuS[i] = 0;
 		}
 	}
-	maxLOcc = maxOcc*lct;
 	numP = (int*) malloc(sizeof(int) * numCs);
 	probs = (double*)malloc(sizeof(double) * numVs);
 	assign = (bool*)malloc(sizeof(bool) * numVs);
@@ -181,6 +175,10 @@ void readFile(const char* fileName){
 		}
 	  getline(fp,buff);
 	}
+	getline(fp,buff);
+	head =buff.at(0);
+	if(head == 'c'){
+	}
    	// Get the clauses
    	int index = -1;
    	int line = 0;
@@ -198,13 +196,15 @@ void memAllocate(string buff){
 	clauses = new vector<int>[numCs];
 	posC= new vector<int>[numVs];
 	negC= new vector<int>[numVs];
-	posOc = (int*) malloc(sizeof(int) * numVs);
-	negOc = (int*) malloc(sizeof(int) * numVs);
 	for(int i = 0; i < numVs; i++){
-		posOc[i] = 0;
+		posC[i].push_back(0);
+		posC[i].push_back(0);
+		posC[i].push_back(0);
 	}
 	for(int i = 0; i < numVs; i++){
-		negOc[i] = 0;
+		negC[i].push_back(0);
+		negC[i].push_back(0);
+		negC[i].push_back(0);
 	}
 	clauseT.reserve(numVs);
 }
@@ -213,19 +213,27 @@ void parseLine(string line,int indexC){
     const char s[2] = " ";
     if( indexC == -1){
     	strtok(str, s);
-		strtok(NULL, s);
 		numVs = atoi(strtok(NULL, s))+1;
+		numV1 = atoi(strtok(NULL, s))+1;
 		numCs = atoi(strtok(NULL, s));
+		numC1 = atoi(strtok(NULL, s));
+		numCc = atoi(strtok(NULL, s));
 		return;
     }// for the p line
     int lit;
     int size;
+    int p;
+    if(indexC < numC1) p = 0;
+    else{
+    	if(indexC < numCc) p = 1;
+    	else p = 2;
+    }
     char* token = strtok(str, s);
     while(token != NULL){
 		if(*token== '-'){
 			lit = atoi(token);
 			clauseT.push_back(lit);
-		    negOc[-lit]++;
+		    negC[-lit][p]++;
 			token = strtok(NULL, s);
 			size++;
 			continue;
@@ -237,7 +245,7 @@ void parseLine(string line,int indexC){
 		}
 		lit = atoi(token);
 		clauseT.push_back(lit);
-	    posOc[lit]++;
+	    posC[lit][p]++;
 	    size++;
 		token = strtok(NULL, s);
     }
@@ -259,19 +267,6 @@ void Process<T>::printOptions(){
 	cout<<"c cb: "<<cb<<endl;
 	cout<<"c eps: "<<eps<<endl;
 	cout<<"c lct: "<<lct<<endl;
-	switch(generator){
-	case 0:{
-		cout<<"c rand() generator with seed " <<seed <<endl;
-		break;
-		}
-	case 1:{
-		cout<<"c minstd_rand() generator with seed " <<seed <<endl;
-		break;
-		}
-	default:{
-		cout<<"c mersenne_twister_rand() generator with seed " <<seed <<endl;
-	}
-	}
 	switch(fct){
 	case 0:{
 		cout<<"c polynomial function"<<endl;
@@ -332,10 +327,8 @@ void Process<T>::printNumP(){
 
 void initialAssignment(){
 	for(int i = 0; i < numVs; i++){
-		if(posOc[i]> maxOcc) maxOcc = posOc[i];
-		if(negOc[i]> maxOcc) maxOcc = negOc[i];
-		posC[i].reserve(posOc[i]);
-		negC[i].reserve(negOc[i]);
+		posC[i].reserve(posC[i][0]+posC[i][1]+posC[i][2]+3);
+		negC[i].reserve(negC[i][0]+negC[i][1]+negC[i][2]+3);
 	}
 	for(int j = 0; j < numCs; j++){
 		for (std::vector<int>::const_iterator i = clauses[j].begin(); i != clauses[j].end(); ++i){
@@ -347,7 +340,7 @@ void initialAssignment(){
 template<class T>
 void Process<T>::biasAssignment(){
 	for(int i = 0; i < numVs; i++){
-			if(posOc[i] > negOc[i]){
+			if(posC[i][0] > negC[i][0]){
 				assign[i] = true;
 			}
 			else{
@@ -360,12 +353,12 @@ template<class T>
 void Process<T>::randomBiasAssignment(){
 	int sum;
 	for(int i = 0; i < numVs; i++){
-		sum = posOc[i] +negOc[i];
+		sum = posC[i][0] +negC[i][0];
 		if(sum == 0){
 			assign[i] = true;
 		}
 		else{
-			assign[i] = ((this->*randINT)()%sum)<posOc[i];
+			assign[i] = ((this->*randINT)()%sum)<posC[i][0];
 		}
 	}
 	setAssignment();
@@ -390,12 +383,12 @@ void Process<T>::setAssignment(){
 	}
    	for(int j = 0; j < numVs; j++){
 		if(assign[j] == false){
-	   		for (std::vector<int>::const_iterator i = negC[j].begin(); i != negC[j].end(); ++i){
+	   		for (std::vector<int>::const_iterator i = negC[j].begin()+3; i != negC[j].end(); ++i){
 	   			numP[*i]++;
 	   		}
 		}
 		else{
-			for (std::vector<int>::const_iterator i = posC[j].begin(); i != posC[j].end(); ++i){
+			for (std::vector<int>::const_iterator i = posC[j].begin()+3; i != posC[j].end(); ++i){
 	   			numP[*i]++;
 			}
    		}
@@ -416,7 +409,7 @@ void Process<T>::optimal(){
 				if (unsatCs.size()== 0){
 					//debugAssign();
 					sat = true;
-					//test();
+					test();
 					cout<< "s SATISFIABLE"<< endl;
 					//printAssignment();
 					abort();
@@ -446,7 +439,7 @@ int Process<T>::getFlipLiteral(int cIndex){
 			min = bre;
 			greedyLiteral = *i;
 		}
-		if(bre < maxLOcc){
+		if(bre < numCs){
 		sum+= lookUpTable[bre];
 		}
 		else{
@@ -473,21 +466,21 @@ template<class T>
 void Process<T>::flip(int literal){
 	std::vector<int>::const_iterator i;
 	if(literal > 0){
-   		for (i = negC[literal].begin(); i != negC[literal].end(); ++i){
+   		for (i = negC[literal].begin()+3; i != negC[literal].end(); ++i){
    			numP[*i]--;
    			if(numP[*i] == 0) unsatCs.push_back(*i);
    		}
-		for (i = posC[literal].begin(); i != posC[literal].end(); ++i){
+		for (i = posC[literal].begin()+3; i != posC[literal].end(); ++i){
    			numP[*i]++;
 		}
 
 		assign[literal] = true;
 	}
 	else{
-   		for (i = negC[-literal].begin(); i != negC[-literal].end(); ++i){
+   		for (i = negC[-literal].begin()+3; i != negC[-literal].end(); ++i){
    			numP[*i]++;
    		}
-		for (i = posC[-literal].begin(); i != posC[-literal].end(); ++i){
+		for (i = posC[-literal].begin()+3; i != posC[-literal].end(); ++i){
    			numP[*i]--;
    			if(numP[*i] == 0) unsatCs.push_back(*i);
 		}
@@ -508,7 +501,7 @@ void Process<T>::test(){
    	while(!fp.eof()){
    		if(buff.empty()) break;
 		head =buff.at(0);
-		if(head == 'p'){
+		if(head == 'c'){
 			break;
 		}
 	  getline(fp,buff);
@@ -554,7 +547,7 @@ int Process<T>::computeBreakScore(int literal){
     int score = 0;
     int aIndex = abs(literal);
     vector<int>& occList =(literal < 0)? posC[aIndex] :negC[aIndex];
-    for(std::vector<int>::const_iterator i = occList.begin(); i != occList.end(); ++i) {
+    for(std::vector<int>::const_iterator i = occList.begin()+3; i != occList.end(); ++i) {
         if (numP[*i]== 1) {
             score++;
         }
@@ -634,15 +627,15 @@ void printUsage(){
 template<class T>
 void Process<T>::initLookUpTable_exp(){
 
-	lookUpTable = (double*)malloc(sizeof(double) * maxLOcc);
-	for(int i = 0; i < maxLOcc;i++){
+	lookUpTable = (double*)malloc(sizeof(double) * numCs);
+	for(int i = 0; i < numCs;i++){
 		lookUpTable[i] = pow(cb,-i);
 	}
 }
 template<class T>
 void Process<T>::initLookUpTable_poly(){
-	lookUpTable = (double*)malloc(sizeof(double) * maxLOcc);
-	for(int i = 0; i < maxLOcc;i++){
+	lookUpTable = (double*)malloc(sizeof(double) * numCs);
+	for(int i = 0; i < numCs;i++){
 		lookUpTable[i] = pow((eps+i),-cb);
 	}
 }

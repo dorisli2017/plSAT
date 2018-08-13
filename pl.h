@@ -39,12 +39,12 @@ const vector<vector<double>> setDD = {{3.6, 1.0,0.5},{3.6, 1.0,0.5}};
 char* fileName;
 int numCs;
 int numVs;
+int numV1;
+int numC1;
+int numCc;
 vector<int>* clauses;
 vector<int>* posC;
 vector<int>* negC;
-int* posOc;
-int* negOc;
-int maxOcc;
 vector<int> clauseT;
 bool sat = false;
 uniform_int_distribution<int> distribution(0,INT_MAX);
@@ -72,7 +72,6 @@ class Process{
 	bool* assign;
 	double* lookUpTable;
 	int* tabuS;
-	int maxLOcc;
 	T generator;
 
 	/*settings*/
