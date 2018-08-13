@@ -483,7 +483,7 @@ int Process<T>::getFlipLiteral(int cIndex){
 	for (std::vector<int>::const_iterator i = vList.begin(); i != vList.end(); ++i){
 		bre = computeBreakScore(*i);
 		if(bre == 0){
-			if (numUnsat < (this->*randINT)()){
+			if (numUnsat < ((this->*randINT)()%numCs)){
 				return *i;
 			}
 		}
