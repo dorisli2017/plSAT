@@ -218,10 +218,10 @@ void parseLine(string line,int indexC){
 			strtok(str, s);
 			numVs = atoi(strtok(NULL, s))+1;
 			strtok(NULL, s);
-			numV1 = numVs;
+			numV1 = 0;
 			numCs = atoi(strtok(NULL, s));
-			numC1 = numCs;
-			numCc = numCs;
+			numC1 = 0;
+			numCc = 0;
 			return;
 	   }
    }// for partition file;*/
@@ -230,9 +230,9 @@ void parseLine(string line,int indexC){
 			strtok(str, s);
 			strtok(NULL, s);
 			numVs = atoi(strtok(NULL, s))+1;
-			numV1 = numVs;
+			numV1 = numVs/2;
 			numCs = atoi(strtok(NULL, s));
-			numC1 = numCs;
+			numC1 = 0;
 			numCc = numCs;
 			return;
 	   }
@@ -357,7 +357,7 @@ void initialAssignment(){
 template<class T>
 void Process<T>::biasAssignment(){
 	for(int i = 0; i < numVs; i++){
-			if(posC[i][0] > negC[i][0]){
+			if(posC[i][0]+posC[i][1]+posC[i][2] > negC[i][0]+negC[i][1]+negC[i][2]){
 				assign[i] = true;
 			}
 			else{
