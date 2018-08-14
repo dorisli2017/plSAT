@@ -207,12 +207,21 @@ void parseLine(string line,int indexC){
     const char s[2] = " ";
    if(inter){
 	   if( indexC == -1){
-			strtok(str, s);
+		    /*strtok(str, s);
 			numVs = atoi(strtok(NULL, s))+1;
 			numV1 = atoi(strtok(NULL, s))+1;
 			numCs = atoi(strtok(NULL, s));
 			numC1 = atoi(strtok(NULL, s));
 			numCc = atoi(strtok(NULL, s));
+			return;
+			*/
+			strtok(str, s);
+			numVs = atoi(strtok(NULL, s))+1;
+			strtok(NULL, s);
+			numV1 = numVs;
+			numCs = atoi(strtok(NULL, s));
+			numC1 = numCs;
+			numCc = numCs;
 			return;
 	   }
    }// for partition file;*/
