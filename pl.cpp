@@ -167,10 +167,12 @@ void readFile(const char* fileName){
 		}
 	  getline(fp,buff);
 	}
-	/*getline(fp,buff);
-	head =buff.at(0);
-	if(head == 'c'){
-	}*/
+	if(inter){
+		getline(fp,buff);
+		head =buff.at(0);
+		if(head == 'c'){
+		}
+	}// for partition file
    	// Get the clauses
    	int index = -1;
    	int line = 0;
@@ -203,24 +205,28 @@ void memAllocate(string buff){
 void parseLine(string line,int indexC){
 	char* str = strdup(line.c_str());
     const char s[2] = " ";
-   /* if( indexC == -1){
-    	strtok(str, s);
-		numVs = atoi(strtok(NULL, s))+1;
-		numV1 = atoi(strtok(NULL, s))+1;
-		numCs = atoi(strtok(NULL, s));
-		numC1 = atoi(strtok(NULL, s));
-		numCc = atoi(strtok(NULL, s));
-		return;
-    }// for partition file;*/
-    if( indexC == -1){
-    	strtok(str, s);
-    	strtok(NULL, s);
-		numVs = atoi(strtok(NULL, s))+1;
-		numV1 = numVs;
-		numCs = atoi(strtok(NULL, s));
-		numC1 = numCs;
-		numCc = numCs;
-		return;
+   if(inter){
+	   if( indexC == -1){
+			strtok(str, s);
+			numVs = atoi(strtok(NULL, s))+1;
+			numV1 = atoi(strtok(NULL, s))+1;
+			numCs = atoi(strtok(NULL, s));
+			numC1 = atoi(strtok(NULL, s));
+			numCc = atoi(strtok(NULL, s));
+			return;
+	   }
+   }// for partition file;*/
+   else{
+		   if( indexC == -1){
+			strtok(str, s);
+			strtok(NULL, s);
+			numVs = atoi(strtok(NULL, s))+1;
+			numV1 = numVs;
+			numCs = atoi(strtok(NULL, s));
+			numC1 = numCs;
+			numCc = numCs;
+			return;
+	   }
     }
     int lit;
     int size;
@@ -251,7 +257,7 @@ void parseLine(string line,int indexC){
 	    size++;
 		token = strtok(NULL, s);
     }
-	perror("a clause line does not terminates");
+	perror("a clause line does not terminates in parseLine");
 	exit(EXIT_FAILURE);
 }
 template<class T>
@@ -554,11 +560,15 @@ void Process<T>::test(){
    	while(!fp.eof()){
    		if(buff.empty()) break;
 		head =buff.at(0);
-		/*if(head == 'c'){
-			break;
-		}*/ // for partition file
-		if(head == 'p'){
-			break;
+		if(inter){
+			if(head == 'c'){
+				break;
+			}
+		}
+		else{
+			if(head == 'p'){
+				break;
+			}
 		}
 	  getline(fp,buff);
 	}
@@ -595,7 +605,7 @@ void Process<T>::testLine(string line){
 		token = strtok(NULL, s);
     }
     cout<< line;
-	perror("a clause line does not terminates");
+	perror("a clause line does not terminates in testLine");
 	exit(EXIT_FAILURE);
 
 }
