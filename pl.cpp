@@ -498,7 +498,6 @@ void Process<T>::solvePart(int index){
 			unsatCs.pop_back();
 			size--;
  			numUnsat--;
- 			assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
 			if(size == 0) return;
 			randC = (this->*randINT)()%size;
 			flipCindex = unsatCs[randC];
