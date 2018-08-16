@@ -93,8 +93,6 @@ public:
 	void printOptions();
 	double LookUpTable_exp(int literal);
 	double LookUpTable_poly(int literal);
-	double func_exp(int literal,int partition);
-	double func_poly(int literal,int partition);
 	double (Process::*lookUp)(int)  = NULL;
 	void initLookUpTable_exp(void);
 	void initLookUpTable_poly(void);
@@ -113,7 +111,9 @@ public:
 	void test();
 	void testLine(string line);
 	void debugAssign();
-	int computeBreakScore(int literal,int partition);
+	int computeBreakScore(int literal);
+	int computeBreakScore0(int literal);
+	int computeBreakScore2(int literal);
 	int (Process::*randINT)(void) = NULL;
 	int randI();
 	int randI2();

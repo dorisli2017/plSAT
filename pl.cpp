@@ -191,17 +191,20 @@ void memAllocate(string buff){
 	clauses = new vector<int>[numCs];
 	posC= new vector<int>[numVs];
 	negC= new vector<int>[numVs];
+	static const int arr[] = {4,0,0,0};
 	for(int i = 0; i < numVs; i++){
-		posC[i].push_back(4);
+		posC[i]= {4,0,0,0};
+		/*posC[i].push_back(4);
 		posC[i].push_back(0);
 		posC[i].push_back(0);
-		posC[i].push_back(0);
+		posC[i].push_back(0);*/
 	}
 	for(int i = 0; i < numVs; i++){
-		negC[i].push_back(4);
+		negC[i]= {4,0,0,0};
+		/*negC[i].push_back(4);
 		negC[i].push_back(0);
 		negC[i].push_back(0);
-		negC[i].push_back(0);
+		negC[i].push_back(0);*/
 	}
 	clauseT.reserve(numVs);
 }
@@ -514,9 +517,11 @@ void Process<T>::solvePart(int index){
 template<class T>
 void Process<T>::optimal(){
 	solvePart(0);
-	testPart(0);
+	//testPart(0);
 	if(unsat[0].size()== 0) cout<< "SAT "<< 0 <<endl;
-	//solvePart(2);
+	solvePart(2);
+	if(unsat[2].size()== 0) cout<< "SAT "<< 2 <<endl;
+	//testPart(2);
 	//if(unsat[2].size()== 0) cout<< "SAT "<< 2 <<endl;
 	//setAssignment();
 	/*if (numUnsat == 0){
@@ -557,8 +562,11 @@ int Process<T>::getFlipLiteral(int cIndex, int partition){
 	int j=0,bre,min= numCs+1;
 	double sum=0,randD;
 	int greedyLiteral = 0, randomLiteral;
+	int (Process::*computeBreak)(int)  = NULL;
+	if(partition == 0) computeBreak = &Process::computeBreakScore0;
+	if(partition == 2)computeBreak = &Process::computeBreakScore2;
 	for (std::vector<int>::const_iterator i = vList.begin(); i != vList.end(); ++i){
-		bre = computeBreakScore(*i, partition);
+		bre = computeBreakScore(*i);
 		if(bre == 0){
 			if(numUnsat < ((this->*randINT)()%numCs)){
 				return *i;
@@ -730,12 +738,14 @@ void Process<T>::testPart(int partition){
 		}
    	}
    	if(partition == 2){
+   	   	line = 0;
 		while(!fp.eof()){
 			getline(fp,buff);
 			line++;
 			if(line == numCc) break;
 			if(buff.empty()) continue;
 		}
+	   	line = 0;
 		while(!fp.eof()){
 			getline(fp,buff);
 			line++;
@@ -743,11 +753,15 @@ void Process<T>::testPart(int partition){
 				cout<< partition << " tested" << endl;
 				return;
 			}
-			if(buff.empty()) continue;
+			if(buff.empty()){
+				cout<< " "<<line <<"empty line";
+				break;
+			}
 			testLine(buff);
 		}
 
    	}
+   	cout<< line <<endl;
    	assert(false);
 }
 template<class T>
@@ -815,18 +829,12 @@ void Process<T>::testLine(string line){
 
 }
 template<class T>
-int Process<T>::computeBreakScore(int literal,int partition){
+int Process<T>::computeBreakScore(int literal){
     int score = 0;
     int aIndex = abs(literal);
     vector<int>& occList =(literal < 0)? posC[aIndex] :negC[aIndex];
     int start, end;
-    switch(partition){
-    case -1:start = occList[0];end = occList[3];  break;
-    case 0:start = occList[0]; end = occList[1];break;
-    case 1:start = occList[1]; end = occList[2];break;
-    case 2:start = occList[2]; end = occList[3];break;
-    assert(false);
-    }
+    start = occList[0];end = occList[3];
     for(int i = start; i < end; i++) {
         if (numP[occList[i]]== 1) {
             score++;
@@ -836,15 +844,35 @@ int Process<T>::computeBreakScore(int literal,int partition){
     return score;
 }
 template<class T>
-double Process<T>::func_exp(int literal,int partition){
-	return pow(cb,-computeBreakScore(literal,partition));
+int Process<T>::computeBreakScore0(int literal){
+    int score = 0;
+    int aIndex = abs(literal);
+    vector<int>& occList =(literal < 0)? posC[aIndex] :negC[aIndex];
+    int start, end;
+    start = occList[0]; end = occList[1];
+    for(int i = start; i < end; i++) {
+        if (numP[occList[i]]== 1) {
+            score++;
+        }
+    }
+	//cout<< "out make "<<endl;
+    return score;
 }
 template<class T>
-double Process<T>::func_poly(int literal,int partition){
-	return pow((eps+computeBreakScore(literal,partition)),-cb);
+int Process<T>::computeBreakScore2(int literal){
+    int score = 0;
+    int aIndex = abs(literal);
+    vector<int>& occList =(literal < 0)? posC[aIndex] :negC[aIndex];
+    int start, end;
+    start = occList[2]; end = occList[3];
+    for(int i = start; i < end; i++) {
+        if (numP[occList[i]]== 1) {
+            score++;
+        }
+    }
+	//cout<< "out make "<<endl;
+    return score;
 }
-
-
 void printVector(vector<int>& vec){
 	for (std::vector<int>::const_iterator i = vec.begin(); i != vec.end(); ++i){
 		cout << *i << ' ';
