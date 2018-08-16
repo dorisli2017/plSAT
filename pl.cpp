@@ -438,6 +438,34 @@ void Process<T>::setAssignment(){
    	}
 }
 template<class T>
+void Process<T>::solve(){
+	assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
+	int index = (this->*randINT)()%3;
+	vector<int>& unsatCs = unsat[index];
+	if (unsatCs.size()== 0){
+		return;
+	}
+	int size = unsatCs.size();
+	int randC = (this->*randINT)()%size;
+	int flipCindex = unsatCs[randC];
+	while(numP[flipCindex] > 0){
+		unsatCs[randC]=unsatCs.back();
+		unsatCs.pop_back();
+		size--;
+		numUnsat--;
+		assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
+		if(size == 0) return;
+		randC = (this->*randINT)()%size;
+		flipCindex = unsatCs[randC];
+	}
+	int flipLindex = getFlipLiteral(flipCindex,-1);
+	unsatCs[randC]=unsatCs.back();
+	unsatCs.pop_back();
+	numUnsat--;
+	flip(flipLindex);
+	if(tabu_flag) tabuS[abs(flipLindex)]++;
+}
+template<class T>
 void Process<T>::solvePart(int index){
 	assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
 	vector<int>& unsatCs = unsat[index];
@@ -488,12 +516,14 @@ void Process<T>::optimal(){
 				//abort();
 				return;
 			}
-			solvePart(0);
+			/*solvePart(0);
 			assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
 			solvePart(2);
 			assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
 			solvePart(1);
 			assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
+			*/
+			solve();
 	}
 }
 

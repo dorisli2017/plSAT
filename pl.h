@@ -116,5 +116,6 @@ public:
 	int randI2();
 	void solvePart(int index);
 	void push(int cIndex);
+	void solve();
 };
 #endif /* MAIN_H_ */
