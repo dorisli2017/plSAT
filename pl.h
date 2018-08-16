@@ -117,5 +117,6 @@ public:
 	void solvePart(int index);
 	void push(int cIndex);
 	void solve();
+	void flipS(int literal);
 };
 #endif /* MAIN_H_ */

@@ -209,14 +209,14 @@ void parseLine(string line,int indexC){
     const char s[2] = " ";
    if(inter){
 	   if( indexC == -1){
-		    /*strtok(str, s);
+		    strtok(str, s);
 			numVs = atoi(strtok(NULL, s))+1;
 			numV1 = atoi(strtok(NULL, s))+1;
 			numCs = atoi(strtok(NULL, s));
 			numC1 = atoi(strtok(NULL, s));
 			numCc = atoi(strtok(NULL, s));
 			return;
-			*/
+			/*
 			strtok(str, s);
 			numVs = atoi(strtok(NULL, s))+1;
 			strtok(NULL, s);
@@ -225,6 +225,7 @@ void parseLine(string line,int indexC){
 			numC1 = 0;
 			numCc = numCs;
 			return;
+			*/
 	   }
    }// for partition file;*/
    else{
@@ -439,12 +440,8 @@ void Process<T>::setAssignment(){
 }
 template<class T>
 void Process<T>::solve(){
-	assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
-	int index = (this->*randINT)()%3;
-	vector<int>& unsatCs = unsat[index];
-	if (unsatCs.size()== 0){
-		return;
-	}
+	assert(numUnsat == unsat[1].size());
+	vector<int>& unsatCs = unsat[1];
 	int size = unsatCs.size();
 	int randC = (this->*randINT)()%size;
 	int flipCindex = unsatCs[randC];
@@ -453,7 +450,7 @@ void Process<T>::solve(){
 		unsatCs.pop_back();
 		size--;
 		numUnsat--;
-		assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
+		assert(numUnsat == unsat[1].size());
 		if(size == 0) return;
 		randC = (this->*randINT)()%size;
 		flipCindex = unsatCs[randC];
@@ -462,7 +459,7 @@ void Process<T>::solve(){
 	unsatCs[randC]=unsatCs.back();
 	unsatCs.pop_back();
 	numUnsat--;
-	flip(flipLindex);
+	flipS(flipLindex);
 	if(tabu_flag) tabuS[abs(flipLindex)]++;
 }
 template<class T>
@@ -499,32 +496,40 @@ void Process<T>::solvePart(int index){
 template<class T>
 void Process<T>::optimal(){
 	int rct;
-	//check(get first unsat part)
-	//solveP0
-	//solveP1
-	//solveC
+	solvePart(0);
+	if(unsat[0].size()== 0) cout<< "SAT "<< 0 <<endl;
+	solvePart(2);
+	if(unsat[2].size()== 0) cout<< "SAT "<< 2 <<endl;
+	/*if (numUnsat == 0){
+		assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
+		//#pragma omp critical
+		//{
+		//test();
+		//}
+		cout<< "s SATISFIABLE"<< endl;
+		//printAssignment();
+		//abort();
+		return;
+	}
+	else{
+		unsat[1].insert( unsat[1].end(), unsat[0].begin(), unsat[0].end());
+		unsat[1].insert( unsat[1].end(), unsat[2].begin(), unsat[2].end());
+	}
 	while(true){
 			if (numUnsat == 0){
-				assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
-			/*	#pragma omp critical
-				{
-				test();
-				}
-			*/
+				assert(numUnsat == unsat[1].size());
+			//	#pragma omp critical
+				//{
+				//test();
+				//}
+			//
 				cout<< "s SATISFIABLE"<< endl;
 				//printAssignment();
 				//abort();
 				return;
 			}
-			/*solvePart(0);
-			assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
-			solvePart(2);
-			assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
-			solvePart(1);
-			assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
-			*/
 			solve();
-	}
+	}*/
 }
 
 template<class T>
@@ -589,6 +594,31 @@ void Process<T>::flip(int literal){
 		for (i = posC[-literal].begin()+4; i != posC[-literal].end(); ++i){
    			numP[*i]--;
    			if(numP[*i] == 0) push(*i);
+		}
+		assign[-literal]= false;
+	}
+}
+template<class T>
+void Process<T>::flipS(int literal){
+	std::vector<int>::const_iterator i;
+	if(literal > 0){
+   		for (i = negC[literal].begin()+4; i != negC[literal].end(); ++i){
+   			numP[*i]--;
+   			if(numP[*i] == 0) unsat[1].push_back(*i);
+   		}
+		for (i = posC[literal].begin()+4; i != posC[literal].end(); ++i){
+   			numP[*i]++;
+		}
+
+		assign[literal] = true;
+	}
+	else{
+   		for (i = negC[-literal].begin()+4; i != negC[-literal].end(); ++i){
+   			numP[*i]++;
+   		}
+		for (i = posC[-literal].begin()+4; i != posC[-literal].end(); ++i){
+   			numP[*i]--;
+   			if(numP[*i] == 0) unsat[1].push_back(*i);
 		}
 		assign[-literal]= false;
 	}
