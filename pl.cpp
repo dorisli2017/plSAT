@@ -220,10 +220,10 @@ void parseLine(string line,int indexC){
 			strtok(str, s);
 			numVs = atoi(strtok(NULL, s))+1;
 			strtok(NULL, s);
-			numV1 = 0;
+			numV1 = numVs;
 			numCs = atoi(strtok(NULL, s));
 			numC1 = 0;
-			numCc = 0;
+			numCc = numCs;
 			return;
 	   }
    }// for partition file;*/
