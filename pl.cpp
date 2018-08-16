@@ -191,11 +191,13 @@ void memAllocate(string buff){
 	posC= new vector<int>[numVs];
 	negC= new vector<int>[numVs];
 	for(int i = 0; i < numVs; i++){
+		posC[i].push_back(4);
 		posC[i].push_back(0);
 		posC[i].push_back(0);
 		posC[i].push_back(0);
 	}
 	for(int i = 0; i < numVs; i++){
+		negC[i].push_back(4);
 		negC[i].push_back(0);
 		negC[i].push_back(0);
 		negC[i].push_back(0);
@@ -240,10 +242,10 @@ void parseLine(string line,int indexC){
     int lit;
     int size;
     int p;
-    if(indexC < numC1) p = 0;
+    if(indexC < numC1) p = 1;
     else{
-    	if(indexC < numCc) p = 1;
-    	else p = 2;
+    	if(indexC < numCc) p = 2;
+    	else p = 3;
     }
     char* token = strtok(str, s);
     while(token != NULL){
@@ -344,8 +346,14 @@ void Process<T>::printNumP(){
 
 void initialAssignment(){
 	for(int i = 0; i < numVs; i++){
-		posC[i].reserve(posC[i][0]+posC[i][1]+posC[i][2]+3);
-		negC[i].reserve(negC[i][0]+negC[i][1]+negC[i][2]+3);
+		posC[i][1] = posC[i][1]+posC[i][0];
+		posC[i][2] =  posC[i][1]+posC[i][2];
+		posC[i][3] = posC[i][2]+posC[i][3];
+		negC[i][1] = negC[i][1]+negC[i][0];
+		negC[i][2] =  negC[i][1]+negC[i][2];
+		negC[i][3] = negC[i][2]+negC[i][3];
+		posC[i].reserve(posC[i][3]);
+		negC[i].reserve(negC[i][3]);
 	}
 	for(int j = 0; j < numCs; j++){
 		for (std::vector<int>::const_iterator i = clauses[j].begin(); i != clauses[j].end(); ++i){
@@ -357,7 +365,7 @@ void initialAssignment(){
 template<class T>
 void Process<T>::biasAssignment(){
 	for(int i = 0; i < numVs; i++){
-			if(posC[i][0]+posC[i][1]+posC[i][2] > negC[i][0]+negC[i][1]+negC[i][2]){
+			if(posC[i][3] > negC[i][3]){
 				assign[i] = true;
 			}
 			else{
@@ -370,12 +378,12 @@ template<class T>
 void Process<T>::randomBiasAssignment(){
 	int sum;
 	for(int i = 0; i < numVs; i++){
-		sum = posC[i][0] +negC[i][0];
+		sum = posC[i][3] +negC[i][3];
 		if(sum == 0){
 			assign[i] = true;
 		}
 		else{
-			assign[i] = ((this->*randINT)()%sum)<posC[i][0];
+			assign[i] = ((this->*randINT)()%sum)<posC[i][3];
 		}
 	}
 	setAssignment();
@@ -400,12 +408,12 @@ void Process<T>::setAssignment(){
 	}
    	for(int j = 0; j < numVs; j++){
 		if(assign[j] == false){
-	   		for (std::vector<int>::const_iterator i = negC[j].begin()+3; i != negC[j].end(); ++i){
+	   		for (std::vector<int>::const_iterator i = negC[j].begin()+4; i != negC[j].end(); ++i){
 	   			numP[*i]++;
 	   		}
 		}
 		else{
-			for (std::vector<int>::const_iterator i = posC[j].begin()+3; i != posC[j].end(); ++i){
+			for (std::vector<int>::const_iterator i = posC[j].begin()+4; i != posC[j].end(); ++i){
 	   			numP[*i]++;
 			}
    		}
@@ -534,21 +542,21 @@ template<class T>
 void Process<T>::flip(int literal){
 	std::vector<int>::const_iterator i;
 	if(literal > 0){
-   		for (i = negC[literal].begin()+3; i != negC[literal].end(); ++i){
+   		for (i = negC[literal].begin()+4; i != negC[literal].end(); ++i){
    			numP[*i]--;
    			if(numP[*i] == 0) push(*i);
    		}
-		for (i = posC[literal].begin()+3; i != posC[literal].end(); ++i){
+		for (i = posC[literal].begin()+4; i != posC[literal].end(); ++i){
    			numP[*i]++;
 		}
 
 		assign[literal] = true;
 	}
 	else{
-   		for (i = negC[-literal].begin()+3; i != negC[-literal].end(); ++i){
+   		for (i = negC[-literal].begin()+4; i != negC[-literal].end(); ++i){
    			numP[*i]++;
    		}
-		for (i = posC[-literal].begin()+3; i != posC[-literal].end(); ++i){
+		for (i = posC[-literal].begin()+4; i != posC[-literal].end(); ++i){
    			numP[*i]--;
    			if(numP[*i] == 0) push(*i);
 		}
@@ -623,7 +631,7 @@ int Process<T>::computeBreakScore(int literal){
     int score = 0;
     int aIndex = abs(literal);
     vector<int>& occList =(literal < 0)? posC[aIndex] :negC[aIndex];
-    for(std::vector<int>::const_iterator i = occList.begin()+3; i != occList.end(); ++i) {
+    for(std::vector<int>::const_iterator i = occList.begin()+4; i != occList.end(); ++i) {
         if (numP[*i]== 1) {
             score++;
         }
