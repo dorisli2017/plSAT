@@ -494,12 +494,11 @@ void Process<T>::solvePart(int index){
 }
 template<class T>
 void Process<T>::optimal(){
-	int rct;
 	solvePart(0);
 	if(unsat[0].size()== 0) cout<< "SAT "<< 0 <<endl;
 	//solvePart(2);
 	//if(unsat[2].size()== 0) cout<< "SAT "<< 2 <<endl;
-	setAssignment();
+	//setAssignment();
 	/*if (numUnsat == 0){
 		assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
 		//#pragma omp critical
@@ -541,7 +540,7 @@ int Process<T>::getFlipLiteral(int cIndex, int partition){
 	for (std::vector<int>::const_iterator i = vList.begin(); i != vList.end(); ++i){
 		bre = computeBreakScore(*i, partition);
 		if(bre == 0){
-			if (numUnsat < ((this->*randINT)()%numCs)){
+			if(numUnsat < ((this->*randINT)()%numCs)){
 				return *i;
 			}
 		}
