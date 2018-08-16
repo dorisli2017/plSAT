@@ -631,17 +631,15 @@ void Process<T>::flipO(int literal,int partition){
     case 1:start = occList[1]; end = occList[2];startD = deList[1]; endD = deList[2];break;
     case 2:start = occList[2]; end = occList[3];startD = deList[2]; endD = deList[3];break;
     }
-	if(literal > 0){
-   		for (int i = start; i <end; ++i){
-   			numP[occList[i]]--;
-   			if(numP[occList[i]] == 0) unsat[partition].push_back(occList[i]);
-   		}
-		for (int i = startD; i <endD; ++i){
-   			numP[deList[i]]++;
-		}
-
-		assign[literal] = true;
+	for (int i = start; i <end; ++i){
+		numP[occList[i]]--;
+		if(numP[occList[i]] == 0) unsat[partition].push_back(occList[i]);
 	}
+	for (int i = startD; i <endD; ++i){
+		numP[deList[i]]++;
+	}
+
+	assign[literal] = true;
 }
 template<class T>
 void Process<T>::flipS(int literal){
