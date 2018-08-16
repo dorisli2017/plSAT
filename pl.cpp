@@ -702,15 +702,53 @@ void Process<T>::testPart(int partition){
 	  getline(fp,buff);
 	}
    	int line = 0;
-   	while(!fp.eof()){
-		getline(fp,buff);
-		line++;
-		if(line == num){
-			cout<< partition << " tested" << endl;
-			return;
+   	if(partition == 0){
+		while(!fp.eof()){
+			getline(fp,buff);
+			line++;
+			if(line == num){
+				cout<< partition << " tested" << endl;
+				return;
+			}
+			if(buff.empty()) continue;
+			testLine(buff);
 		}
-		if(buff.empty()) continue;
-		testLine(buff);
+   	}
+   	if(partition == 1){
+		while(!fp.eof()){
+			getline(fp,buff);
+			line++;
+			if(line == numC1) break;
+   		}
+		while(!fp.eof()){
+			getline(fp,buff);
+			line++;
+			if(line == num) {
+				cout<< partition << " tested" << endl;
+				return;
+			}
+			if(buff.empty()) continue;
+			testLine(buff);
+		}
+   	}
+   	if(partition == 2){
+		while(!fp.eof()){
+			getline(fp,buff);
+			line++;
+			if(line == numCc) break;
+			if(buff.empty()) continue;
+		}
+		while(!fp.eof()){
+			getline(fp,buff);
+			line++;
+			if(line == num) {
+				cout<< partition << " tested" << endl;
+				return;
+			}
+			if(buff.empty()) continue;
+			testLine(buff);
+		}
+
    	}
    	assert(false);
 }
