@@ -486,7 +486,7 @@ void Process<T>::solve(){
 template<class T>
 void Process<T>::solvePart(int index){
 	vector<int>& unsatCs = unsat[index];
-	for(unsigned int j = 0; j < maxSteps; j++){
+	while(true){
 		if (unsatCs.size()== 0){
 			return;
 		}
@@ -509,7 +509,6 @@ void Process<T>::solvePart(int index){
 		flipO(flipLindex, index);
 		if(tabu_flag) tabuS[abs(flipLindex)]++;
 	}
-
 	return;
 }
 template<class T>
@@ -639,7 +638,8 @@ void Process<T>::flipO(int literal,int partition){
 		numP[deList[i]]++;
 	}
 
-	assign[literal] = true;
+	if(literal > 0)assign[literal] = true;
+	else assign[-literal] = false;
 }
 template<class T>
 void Process<T>::flipS(int literal){
@@ -672,7 +672,7 @@ void Process<T>::testPart(int partition){
 	switch(partition){
 		case 0:num = numC1;break;
 		case 1:num = numCc-numC1;break;
-		case 2:num = numCs - numCs; break;
+		case 2:num = numCs - numCc; break;
 		assert(false);
 	}
 	ifstream fp;
@@ -799,6 +799,7 @@ void Process<T>::testLine(string line){
 		}
 		if(*token == '0'){
 			if(numT == 0){
+				cout<< line<< endl;
 				perror("TEST FAILURE");
 				exit(EXIT_FAILURE);
 			}
