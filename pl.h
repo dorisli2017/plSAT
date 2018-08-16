@@ -100,6 +100,7 @@ public:
 	void initLookUpTable_poly(void);
 	int getFlipLiteral(int cIndex, int partition);
 	void flip(int literal);
+	void flipO(int literal, int partition);
 	void biasAssignment();
 	void randomBiasAssignment();
 	void randomAssignment();

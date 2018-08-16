@@ -464,7 +464,6 @@ void Process<T>::solve(){
 }
 template<class T>
 void Process<T>::solvePart(int index){
-	assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
 	vector<int>& unsatCs = unsat[index];
 	for(unsigned int j = 0; j < maxSteps; j++){
 		if (unsatCs.size()== 0){
@@ -487,7 +486,7 @@ void Process<T>::solvePart(int index){
 		unsatCs[randC]=unsatCs.back();
 		unsatCs.pop_back();
 		numUnsat--;
-		flip(flipLindex);
+		flipO(flipLindex, index);
 		if(tabu_flag) tabuS[abs(flipLindex)]++;
 	}
 
@@ -498,8 +497,9 @@ void Process<T>::optimal(){
 	int rct;
 	solvePart(0);
 	if(unsat[0].size()== 0) cout<< "SAT "<< 0 <<endl;
-	solvePart(2);
-	if(unsat[2].size()== 0) cout<< "SAT "<< 2 <<endl;
+	//solvePart(2);
+	//if(unsat[2].size()== 0) cout<< "SAT "<< 2 <<endl;
+	setAssignment();
 	/*if (numUnsat == 0){
 		assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
 		//#pragma omp critical
@@ -596,6 +596,31 @@ void Process<T>::flip(int literal){
    			if(numP[*i] == 0) push(*i);
 		}
 		assign[-literal]= false;
+	}
+}
+template<class T>
+void Process<T>::flipO(int literal,int partition){
+    int aIndex = abs(literal);
+    vector<int>& occList =(literal < 0)? posC[aIndex] :negC[aIndex];
+    vector<int>& deList =(literal < 0)? negC[aIndex] : posC[aIndex] ;
+    int start, end;
+    int startD, endD;
+    switch(partition){
+    case -1:start = occList[0];end = occList[3]; startD = deList[0];endD = deList[3]; break;
+    case 0:start = occList[0]; end = occList[1];startD = deList[0]; endD = deList[1];break;
+    case 1:start = occList[1]; end = occList[2];startD = deList[1]; endD = deList[2];break;
+    case 2:start = occList[2]; end = occList[3];startD = deList[2]; endD = deList[3];break;
+    }
+	if(literal > 0){
+   		for (int i = start; i <end; ++i){
+   			numP[occList[i]]--;
+   			if(numP[occList[i]] == 0) unsat[partition].push_back(occList[i]);
+   		}
+		for (int i = startD; i <endD; ++i){
+   			numP[deList[i]]++;
+		}
+
+		assign[literal] = true;
 	}
 }
 template<class T>
