@@ -458,7 +458,7 @@ void Process<T>::solvePart(int index){
 			randC = (this->*randINT)()%size;
 			flipCindex = unsatCs[randC];
 		}
-		int flipLindex = getFlipLiteral(flipCindex);
+		int flipLindex = getFlipLiteral(flipCindex,index);
 		unsatCs[randC]=unsatCs.back();
 		unsatCs.pop_back();
 		numUnsat--;
@@ -498,13 +498,13 @@ void Process<T>::optimal(){
 }
 
 template<class T>
-int Process<T>::getFlipLiteral(int cIndex){
+int Process<T>::getFlipLiteral(int cIndex, int partition){
 	vector<int>&  vList = clauses[cIndex];
 	int j=0,bre,min= numCs+1;
 	double sum=0,randD;
 	int greedyLiteral = 0, randomLiteral;
 	for (std::vector<int>::const_iterator i = vList.begin(); i != vList.end(); ++i){
-		bre = computeBreakScore(*i);
+		bre = computeBreakScore(*i, partition);
 		if(bre == 0){
 			if (numUnsat < ((this->*randINT)()%numCs)){
 				return *i;
@@ -627,12 +627,20 @@ void Process<T>::testLine(string line){
 
 }
 template<class T>
-int Process<T>::computeBreakScore(int literal){
+int Process<T>::computeBreakScore(int literal,int partition){
     int score = 0;
     int aIndex = abs(literal);
     vector<int>& occList =(literal < 0)? posC[aIndex] :negC[aIndex];
-    for(std::vector<int>::const_iterator i = occList.begin()+4; i != occList.end(); ++i) {
-        if (numP[*i]== 1) {
+    int start, end;
+    switch(partition){
+    case -1:start = occList[0];end = occList[3];  break;
+    case 0:start = occList[0]; end = occList[1];break;
+    case 1:start = occList[1]; end = occList[2];break;
+    case 2:start = occList[2]; end = occList[3];break;
+    assert(false);
+    }
+    for(int i = start; i < end; i++) {
+        if (numP[occList[i]]== 1) {
             score++;
         }
     }
@@ -640,12 +648,12 @@ int Process<T>::computeBreakScore(int literal){
     return score;
 }
 template<class T>
-double Process<T>::func_exp(int literal){
-	return pow(cb,-computeBreakScore(literal));
+double Process<T>::func_exp(int literal,int partition){
+	return pow(cb,-computeBreakScore(literal,partition));
 }
 template<class T>
-double Process<T>::func_poly(int literal){
-	return pow((eps+computeBreakScore(literal)),-cb);
+double Process<T>::func_poly(int literal,int partition){
+	return pow((eps+computeBreakScore(literal,partition)),-cb);
 }
 
 

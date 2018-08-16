@@ -93,12 +93,12 @@ public:
 	void printOptions();
 	double LookUpTable_exp(int literal);
 	double LookUpTable_poly(int literal);
-	double func_exp(int literal);
-	double func_poly(int literal);
+	double func_exp(int literal,int partition);
+	double func_poly(int literal,int partition);
 	double (Process::*lookUp)(int)  = NULL;
 	void initLookUpTable_exp(void);
 	void initLookUpTable_poly(void);
-	int getFlipLiteral(int cIndex);
+	int getFlipLiteral(int cIndex, int partition);
 	void flip(int literal);
 	void biasAssignment();
 	void randomBiasAssignment();
@@ -110,7 +110,7 @@ public:
 	void test();
 	void testLine(string line);
 	void debugAssign();
-	int computeBreakScore(int literal);
+	int computeBreakScore(int literal,int partition);
 	int (Process::*randINT)(void) = NULL;
 	int randI();
 	int randI2();
