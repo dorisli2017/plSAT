@@ -115,7 +115,8 @@ Process<T>::Process(const vector<bool>& setB, const vector<int>& setI,const vect
 	probs = (double*)malloc(sizeof(double) * numVs);
 	assign = (bool*)malloc(sizeof(bool) * numVs);
 	unsat= new vector<int>[3];
-	biasAssignment();
+	biasSingle();
+	//biasAssignment();
 	//set lookuptable
 	switch (fct){
 	case 0:initLookUpTable_poly();
@@ -376,6 +377,26 @@ void Process<T>::biasAssignment(){
 	setAssignment();
 }
 template<class T>
+void Process<T>::biasSingle(){
+	for(int i = 0; i < numV1; i++){
+			if(posC[i][1] > negC[i][1]){
+				assign[i] = true;
+			}
+			else{
+				assign[i] = false;
+			}
+	}
+	for(int i = numV1; i < numVs; i++){
+			if((posC[i][3]-posC[i][2]) > (negC[i][3]-negC[i][2])){
+				assign[i] = true;
+			}
+			else{
+				assign[i] = false;
+			}
+	}
+	setAssignment();
+}
+template<class T>
 void Process<T>::randomBiasAssignment(){
 	int sum;
 	for(int i = 0; i < numVs; i++){
@@ -495,6 +516,7 @@ void Process<T>::solvePart(int index){
 template<class T>
 void Process<T>::optimal(){
 	solvePart(0);
+	testPart(0);
 	if(unsat[0].size()== 0) cout<< "SAT "<< 0 <<endl;
 	//solvePart(2);
 	//if(unsat[2].size()== 0) cout<< "SAT "<< 2 <<endl;
@@ -646,6 +668,52 @@ void Process<T>::flipS(int literal){
 		}
 		assign[-literal]= false;
 	}
+}
+template<class T>
+void Process<T>::testPart(int partition){
+	int num;
+	switch(partition){
+		case 0:num = numC1;break;
+		case 1:num = numCc-numC1;break;
+		case 2:num = numCs - numCs; break;
+		assert(false);
+	}
+	ifstream fp;
+	fp.open(fileName,std::ios::in);
+	if(!fp.is_open()){
+		perror("read file fails");
+		exit(EXIT_FAILURE);
+	}
+	string buff;
+	char head;
+   	getline(fp,buff);
+   	while(!fp.eof()){
+   		if(buff.empty()) break;
+		head =buff.at(0);
+		if(inter){
+			if(head == 'c'){
+				break;
+			}
+		}
+		else{
+			if(head == 'p'){
+				break;
+			}
+		}
+	  getline(fp,buff);
+	}
+   	int line = 0;
+   	while(!fp.eof()){
+		getline(fp,buff);
+		line++;
+		if(line == num){
+			cout<< partition << " tested" << endl;
+			return;
+		}
+		if(buff.empty()) continue;
+		testLine(buff);
+   	}
+   	assert(false);
 }
 template<class T>
 void Process<T>::test(){

@@ -102,12 +102,14 @@ public:
 	void flip(int literal);
 	void flipO(int literal, int partition);
 	void biasAssignment();
+	void biasSingle();
 	void randomBiasAssignment();
 	void randomAssignment();
 	void setAssignment();
 	void printAssignment();
 	void printUnsatCs();
 	void printNumP();
+	void testPart(int partition);
 	void test();
 	void testLine(string line);
 	void debugAssign();
