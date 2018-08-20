@@ -28,8 +28,8 @@
 #include <random>
 #include <functional>
 using namespace std;
-bool inter = true;
-const vector<vector<bool>> setBB= {{false},{false}};
+bool inter = false;
+const vector<vector<bool>> setBB= {{true},{false}};
 //  maxSteps,fct,ict,cct,gen,seed
 const vector<vector<int>> setII= {{INT_MAX,2,100,10,0}, {INT_MAX,2,100,1,0}};
 const vector<vector<double>> setDD = {{3.6, 1.0,0.5},{3.6, 1.0,0.5}};
@@ -46,7 +46,6 @@ vector<int>* clauses;
 vector<int>* posC;
 vector<int>* negC;
 vector<int> clauseT;
-uniform_int_distribution<int> distribution(0,INT_MAX);
 /*methods*/
 
 void readFile(const char* fileName);

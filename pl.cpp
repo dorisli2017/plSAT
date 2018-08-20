@@ -92,12 +92,11 @@ void Process<T>::debugAssign(){
 
 }
 template<class T>
-Process<T>::Process(const vector<bool>& setB, const vector<int>& setI,const vector<double>& setD){
+Process<T>::Process(const vector<bool>& setB, const vector<int>& setI,const vector<double>& setD):distribution(0, INT_MAX){
 	parseOptions(setB, setI,setD);
-	distribution = uniform_int_distribution<int>(0,INT_MAX);
 	//set the parameters
 	   // set tabuS
-	if(setI[7] == 10){
+	if(setI[3] == 10){
 		srand(seed);
 		randINT = &Process::randI2;
 	}
@@ -220,7 +219,7 @@ void parseLine(string line,int indexC){
 			numC1 = atoi(strtok(NULL, s));
 			numCc = atoi(strtok(NULL, s));
 			return;
-			/*
+	/*
 			strtok(str, s);
 			numVs = atoi(strtok(NULL, s))+1;
 			strtok(NULL, s);
@@ -229,7 +228,7 @@ void parseLine(string line,int indexC){
 			numC1 = 0;
 			numCc = numCs;
 			return;
-			*/
+	*/
 	   }
    }// for partition file;*/
    else{
@@ -237,10 +236,10 @@ void parseLine(string line,int indexC){
 			strtok(str, s);
 			strtok(NULL, s);
 			numVs = atoi(strtok(NULL, s))+1;
-			numV1 = numVs/2;
+			numV1 = 0;
 			numCs = atoi(strtok(NULL, s));
 			numC1 = 0;
-			numCc = numCs;
+			numCc = 0;
 			return;
 	   }
     }
@@ -516,11 +515,12 @@ void Process<T>::solvePart(int index){
 }
 template<class T>
 void Process<T>::optimal(){
-	solvePart(0);
-	//testPart(0);
-	if(unsat[0].size()== 0) cout<< "SAT "<< 0 <<endl;
 	solvePart(2);
-	if(unsat[2].size()== 0) cout<< "SAT "<< 2 <<endl;
+	//testPart(0);
+	//if(unsat[0].size()== 0)
+	 cout<< "SAT "<< 2 <<endl;
+	//solvePart(2);
+	//if(unsat[2].size()== 0) cout<< "SAT "<< 2 <<endl;
 	//testPart(2);
 	//if(unsat[2].size()== 0) cout<< "SAT "<< 2 <<endl;
 	//setAssignment();
