@@ -575,7 +575,9 @@ void Process<T>::solvePart(int index){
 			unsatCs.pop_back();
 			size--;
  			numUnsat--;
-			if(size == 0) return;
+			if(size == 0){
+			       	return;
+			}
 			randC = (this->*randINT)()%size;
 			flipCindex = unsatCs[randC];
 		}
@@ -583,7 +585,7 @@ void Process<T>::solvePart(int index){
 		unsatCs[randC]=unsatCs.back();
 		unsatCs.pop_back();
 		numUnsat--;
-		flipO(flipLindex, index);
+		flip(flipLindex);
 		flipsN++;
 		if(tabu_flag) tabuS[abs(flipLindex)]++;
 	}
