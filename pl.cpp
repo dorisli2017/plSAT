@@ -31,7 +31,7 @@ int tid;
 	}
 	case 2:{
 		Process<mt19937> process (setB, setI,setD);
-		process.printOptions();
+		//process.printOptions();
 		process.optimal();
 		break;
 	}
@@ -115,7 +115,6 @@ Process<T>::Process(const vector<bool>& setB, const vector<int>& setI,const vect
 	probs = (double*)malloc(sizeof(double) * numVs);
 	assign = (bool*)malloc(sizeof(bool) * numVs);
 	unsat= new vector<int>[3];
-	biasSingle();
 	//biasAssignment();
 	//set lookuptable
 	switch (fct){
@@ -380,24 +379,32 @@ void Process<T>::biasAssignment(){
 	setAssignment();
 }
 template<class T>
-void Process<T>::biasSingle(){
-	for(int i = 0; i < numV1; i++){
-			if(posC[i][1] > negC[i][1]){
-				assign[i] = true;
-			}
-			else{
-				assign[i] = false;
-			}
+void Process<T>::biasSingle(int partition){
+	if(partition == 0){
+		for(int i = 0; i < numV1; i++){
+				if(posC[i][1] > negC[i][1]){
+					assign[i] = true;
+				}
+				else{
+					assign[i] = false;
+				}
+		}
+		setAssignmentS(0);
+		return;
 	}
-	for(int i = numV1; i < numVs; i++){
-			if((posC[i][3]-posC[i][2]) > (negC[i][3]-negC[i][2])){
-				assign[i] = true;
-			}
-			else{
-				assign[i] = false;
-			}
+	if(partition == 2){
+		for(int i = numV1; i < numVs; i++){
+				if((posC[i][3]-posC[i][2]) > (negC[i][3]-negC[i][2])){
+					assign[i] = true;
+				}
+				else{
+					assign[i] = false;
+				}
+		}
+		setAssignmentS(2);
+		return;
 	}
-	setAssignment();
+	assert(false);
 }
 template<class T>
 void Process<T>::randomBiasAssignment(){
@@ -419,6 +426,72 @@ void Process<T>::randomAssignment(){
    		assign[j] = ((this->*randINT)()%2 ==1);
    	}
     setAssignment();
+}
+template<class T>
+void Process<T>::setAssignmentS(int partition){
+    int startP, endP,startN, endN;
+	if(partition == 0){
+	   	for(int i = 0; i < numC1; i++){
+	   		numP[i] = 0;
+	   	}
+		if( tabu_flag && (this->*randINT)()%100<cct){
+			for(int i = 0; i < numVs; i++){
+				tabuS[i] =0;
+			}
+		}
+	   	for(int j = 0; j < numV1; j++){
+	   		startP = posC[j][0]; endP = posC[j][1];startN = negC[j][0]; endN = negC[j][1];
+			if(assign[j] == false){
+		   		for (int i = startN; i< endN; ++i){
+		   			numP[negC[j][i]]++;
+		   		}
+			}
+			else{
+				for (int i = startP; i< endP; ++i){
+					numP[posC[j][i]]++;
+				}
+	   		}
+	   	}
+	   	for(int i = 0; i < numC1; i++){
+	   		if(numP[i] == 0){
+	   			numUnsat++;
+	   			unsat[0].push_back(i);
+	   		}
+	   	}
+	   	return;
+	}
+
+	if(partition == 2){
+	   	for(int i = numCc; i < numCs; i++){
+	   		numP[i] = 0;
+	   	}
+		if( tabu_flag && (this->*randINT)()%100<cct){
+			for(int i = 0; i < numVs; i++){
+				tabuS[i] =0;
+			}
+		}
+	   	for(int j = numV1; j < numVs; j++){
+			startP = posC[j][2]; endP = posC[j][3];startN = negC[j][2]; endN = negC[j][3];
+			if(assign[j] == false){
+		   		for (int i = startN; i< endN; ++i){
+		   			numP[negC[j][i]]++;
+		   		}
+			}
+			else{
+				for (int i = startP; i< endP; ++i){
+					numP[posC[j][i]]++;
+				}
+	   		}
+	   	}
+	   	for(int i = numCc; i < numCs; i++){
+	   		if(numP[i] == 0){
+	 			numUnsat++;
+	   			unsat[2].push_back(i);
+	   		}
+	   	}
+	   	return;
+	}
+	assert(false);
 }
 
 template<class T>
@@ -518,9 +591,11 @@ void Process<T>::solvePart(int index){
 }
 template<class T>
 void Process<T>::optimal(){
+	biasSingle(2);
+	cout<< "After INITLIAZTATION: " << numUnsat<<endl;
 	//if(omp_get_thread_num() == 1){
 	solvePart(2);
-	//testPart(2);
+	testPart(2);
 	//if(unsat[0].size()== 0)
 	 cout<< "SAT "<< 2 <<endl;
 	 cout<< "Flips:" << flipsN <<endl;
@@ -727,9 +802,9 @@ void Process<T>::testPart(int partition){
    	}
    	if(partition == 1){
 		while(!fp.eof()){
+			if(line == numC1) break;
 			getline(fp,buff);
 			line++;
-			if(line == numC1) break;
    		}
 		while(!fp.eof()){
 			getline(fp,buff);
@@ -745,10 +820,10 @@ void Process<T>::testPart(int partition){
    	if(partition == 2){
    	   	line = 0;
 		while(!fp.eof()){
-			getline(fp,buff);
-			line++;
 			if(line == numCc) break;
+			getline(fp,buff);
 			if(buff.empty()) continue;
+			line++;
 		}
 	   	line = 0;
 		while(!fp.eof()){
@@ -766,7 +841,7 @@ void Process<T>::testPart(int partition){
 		}
 
    	}
-   	cout<< line <<endl;
+   	cout<<"line number "<<  line <<endl;
    	assert(false);
 }
 template<class T>

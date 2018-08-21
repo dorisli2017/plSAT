@@ -28,7 +28,7 @@
 #include <random>
 #include <functional>
 using namespace std;
-bool inter = true;
+bool inter = false;
 const vector<vector<bool>> setBB= {{false},{false}};
 //  maxSteps,fct,ict,cct,gen,seed
 const vector<vector<int>> setII= {{INT_MAX,2,100,2,0}, {INT_MAX,2,100,2,0}};
@@ -101,10 +101,11 @@ public:
 	void flip(int literal);
 	void flipO(int literal, int partition);
 	void biasAssignment();
-	void biasSingle();
+	void biasSingle(int partition);
 	void randomBiasAssignment();
 	void randomAssignment();
 	void setAssignment();
+	void setAssignmentS(int partition);
 	void printAssignment();
 	void printUnsatCs();
 	void printNumP();
