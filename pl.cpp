@@ -585,7 +585,7 @@ void Process<T>::solvePart(int index){
 		unsatCs[randC]=unsatCs.back();
 		unsatCs.pop_back();
 		numUnsat--;
-		flip(flipLindex);
+		flipO(flipLindex,index);
 		flipsN++;
 		if(tabu_flag) tabuS[abs(flipLindex)]++;
 	}
@@ -684,26 +684,36 @@ int Process<T>::getFlipLiteral(int cIndex, int partition){
 }
 template<class T>
 void Process<T>::flip(int literal){
+	int count = 0;
 	std::vector<int>::const_iterator i;
 	if(literal > 0){
    		for (i = negC[literal].begin()+4; i != negC[literal].end(); ++i){
    			numP[*i]--;
+			count++;
    			if(numP[*i] == 0) push(*i);
    		}
+		assert(count+4 == negC[literal][3]);
+		count = 0;
 		for (i = posC[literal].begin()+4; i != posC[literal].end(); ++i){
-   			numP[*i]++;
+   			count++;
+			numP[*i]++;
 		}
-
+		assert(count+4 == posC[literal][3]);
 		assign[literal] = true;
 	}
 	else{
    		for (i = negC[-literal].begin()+4; i != negC[-literal].end(); ++i){
-   			numP[*i]++;
+   			count++;
+			numP[*i]++;
    		}
+		assert(count+4 == negC[-literal][3]);
+		count= 0;
 		for (i = posC[-literal].begin()+4; i != posC[-literal].end(); ++i){
    			numP[*i]--;
+			count++;
    			if(numP[*i] == 0) push(*i);
 		}
+		assert(count+4 == posC[-literal][3]);
 		assign[-literal]= false;
 	}
 }
@@ -720,8 +730,13 @@ void Process<T>::flipO(int literal,int partition){
     case 1:start = occList[1]; end = occList[2];startD = deList[1]; endD = deList[2];break;
     case 2:start = occList[2]; end = occList[3];startD = deList[2]; endD = deList[3];break;
     }
+    assert(start == 4);
+    assert(startD == 4);
+    assert(end == occList.size());
+    assert(endD == deList.size());
 	for (int i = start; i <end; ++i){
 		numP[occList[i]]--;
+		assert(occList[i] >=numCc);
 		if(numP[occList[i]] == 0) unsat[partition].push_back(occList[i]);
 	}
 	for (int i = startD; i <endD; ++i){
@@ -1035,6 +1050,7 @@ template<class T>
 void Process<T>::push(int cIndex){
 	assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
 	numUnsat++;
+	assert(cIndex >= numCc);
 	if(cIndex < numC1) unsat[0].push_back(cIndex);
 	else{
 		if(cIndex < numCc) unsat[1].push_back(cIndex);
