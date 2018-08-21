@@ -31,6 +31,7 @@ int tid;
 	}
 	case 2:{
 		Process<mt19937> process (setB, setI,setD);
+		process.printOptions();
 		process.optimal();
 		break;
 	}
@@ -483,6 +484,7 @@ void Process<T>::solve(){
 	unsatCs.pop_back();
 	numUnsat--;
 	flipS(flipLindex);
+	flipsN++;
 	if(tabu_flag) tabuS[abs(flipLindex)]++;
 }
 template<class T>
@@ -509,16 +511,20 @@ void Process<T>::solvePart(int index){
 		unsatCs.pop_back();
 		numUnsat--;
 		flipO(flipLindex, index);
+		flipsN++;
 		if(tabu_flag) tabuS[abs(flipLindex)]++;
 	}
 	return;
 }
 template<class T>
 void Process<T>::optimal(){
+	//if(omp_get_thread_num() == 1){
 	solvePart(2);
-	//testPart(0);
+	//testPart(2);
 	//if(unsat[0].size()== 0)
 	 cout<< "SAT "<< 2 <<endl;
+	 cout<< "Flips:" << flipsN <<endl;
+//	}
 	//solvePart(2);
 	//if(unsat[2].size()== 0) cout<< "SAT "<< 2 <<endl;
 	//testPart(2);
@@ -562,11 +568,10 @@ int Process<T>::getFlipLiteral(int cIndex, int partition){
 	int j=0,bre,min= numCs+1;
 	double sum=0,randD;
 	int greedyLiteral = 0, randomLiteral;
-	int (Process::*computeBreak)(int)  = NULL;
 	if(partition == 0) computeBreak = &Process::computeBreakScore0;
 	if(partition == 2)computeBreak = &Process::computeBreakScore2;
 	for (std::vector<int>::const_iterator i = vList.begin(); i != vList.end(); ++i){
-		bre = computeBreakScore(*i);
+		bre = (this->*Process::computeBreak)(*i);
 		if(bre == 0){
 			if(numUnsat < ((this->*randINT)()%numCs)){
 				return *i;
