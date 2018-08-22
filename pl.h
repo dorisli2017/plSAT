@@ -28,7 +28,7 @@
 #include <random>
 #include <functional>
 using namespace std;
-bool inter = false;
+bool inter = true;
 const vector<vector<bool>> setBB= {{false},{false}};
 //  maxSteps,fct,ict,cct,gen,seed
 const vector<vector<int>> setII= {{INT_MAX,2,100,2,0}, {INT_MAX,2,100,2,0}};

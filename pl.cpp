@@ -586,6 +586,7 @@ void Process<T>::solvePart(int index){
 		unsatCs.pop_back();
 		numUnsat--;
 		flipO(flipLindex,index);
+		//flip(flipLindex);
 		flipsN++;
 		if(tabu_flag) tabuS[abs(flipLindex)]++;
 	}
@@ -737,7 +738,7 @@ void Process<T>::flipO(int literal,int partition){
 	for (int i = start; i <end; ++i){
 		numP[occList[i]]--;
 		assert(occList[i] >=numCc);
-		if(numP[occList[i]] == 0) unsat[partition].push_back(occList[i]);
+		if(numP[occList[i]] == 0){ unsat[partition].push_back(occList[i]);
 	}
 	for (int i = startD; i <endD; ++i){
 		numP[deList[i]]++;
@@ -752,7 +753,10 @@ void Process<T>::flipS(int literal){
 	if(literal > 0){
    		for (i = negC[literal].begin()+4; i != negC[literal].end(); ++i){
    			numP[*i]--;
-   			if(numP[*i] == 0) unsat[1].push_back(*i);
+   			if(numP[*i] == 0){
+   				unsat[1].push_back(*i);
+   				numUnsat++;
+   			}
    		}
 		for (i = posC[literal].begin()+4; i != posC[literal].end(); ++i){
    			numP[*i]++;
@@ -766,7 +770,10 @@ void Process<T>::flipS(int literal){
    		}
 		for (i = posC[-literal].begin()+4; i != posC[-literal].end(); ++i){
    			numP[*i]--;
-   			if(numP[*i] == 0) unsat[1].push_back(*i);
+   			if(numP[*i] == 0) {
+   				unsat[1].push_back(*i);
+   				numUnsat++;
+   			}
 		}
 		assign[-literal]= false;
 	}
