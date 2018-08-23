@@ -13,8 +13,8 @@ int main(int argc, char *argv[]){
 int tid;
 #pragma omp parallel num_threads(2) private(tid)
  {
-	//tid = omp_get_thread_num();
-	tid = 0;
+	tid = omp_get_thread_num();
+	//tid = 0;
 	const vector<bool>setB = setBB[tid];
 	const vector<int> setI =setII[tid];
 	const vector<double>& setD = setDD[tid];
@@ -31,8 +31,8 @@ int tid;
 	}
 	case 2:{
 		Process<mt19937> process (setB, setI,setD);
-		//process.printOptions();
 		process.optimal();
+
 		break;
 	}
 	case 3:{
@@ -583,17 +583,29 @@ void Process<T>::solvePart(int index){
 }
 template<class T>
 void Process<T>::optimal(){
-	biasSingle(2);
-	//if(omp_get_thread_num() == 1){
-	solvePart(2);
-	testPart(2);
-	//if(unsat[0].size()== 0)
-	 cout<< "SAT "<< 2 <<endl;
-	 cout<< "Flips:" << flipsN <<endl;
+	if(omp_get_thread_num() == 0){
+		cout << "solve 0"<<endl;
+		biasSingle(0);
+		solvePart(0);
+	#pragma omp critical
+	{
+		testPart(0);
+		if(unsat[0].size() == 0) cout<< "SAT" << 0<< endl;
+	}
+	}
+	if(omp_get_thread_num() == 1){
+		cout<< "solve 1" << endl;
+		biasSingle(2);
+		solvePart(2);
+	#pragma omp critical
+	{
+            testPart(2);
+	    if(unsat[2].size() == 0) cout<< "SAT" << 2<<endl;
+	}
+	}
+	 //cout<< "Flips:" << flipsN <<endl;
 //	}
 	//solvePart(2);
-	//if(unsat[2].size()== 0) cout<< "SAT "<< 2 <<endl;
-	//testPart(2);
 	//if(unsat[2].size()== 0) cout<< "SAT "<< 2 <<endl;
 	//setAssignment();
 	/*if (numUnsat == 0){
@@ -720,7 +732,6 @@ void Process<T>::flipO(int literal,int partition){
     assert(endD == deList.size());
 	for (int i = start; i <end; ++i){
 		numP[occList[i]]--;
-		assert(occList[i] >=numCc);
 		if(numP[occList[i]] == 0){ 
 	 	   unsat[partition].push_back(occList[i]);
 		}
