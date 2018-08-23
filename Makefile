@@ -1,5 +1,5 @@
 all:
-	g++ -O3 pl.cpp -std=c++11 -o plp2
+	g++ -O3 pl.cpp -std=c++11 -o slf10
 clean:
 	rm pl
 # pl1 two threads no tabu (max 1)

@@ -738,7 +738,10 @@ void Process<T>::flipO(int literal,int partition){
 	for (int i = start; i <end; ++i){
 		numP[occList[i]]--;
 		assert(occList[i] >=numCc);
-		if(numP[occList[i]] == 0){ unsat[partition].push_back(occList[i]);
+		if(numP[occList[i]] == 0){ 
+	 	   unsat[partition].push_back(occList[i]);
+		   numUnsat++;
+		}
 	}
 	for (int i = startD; i <endD; ++i){
 		numP[deList[i]]++;
