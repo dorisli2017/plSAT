@@ -28,7 +28,7 @@
 #include <random>
 #include <functional>
 using namespace std;
-bool inter = false;
+bool inter = true;
 const vector<vector<bool>> setBB= {{true},{false}};
 //  maxSteps,fct,ict,cct,gen,seed
 const vector<vector<int>> setII= {{INT_MAX,2,100,10,0}, {INT_MAX,2,100,2,0}};
@@ -66,7 +66,6 @@ class Process{
 	uniform_int_distribution<int> distribution;
 	int seed;
 	int* numP;
-	int numUnsat = 0;
 	vector<int>* unsat;
 	double* probs;
 	bool* assign;
