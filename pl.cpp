@@ -10,15 +10,12 @@
 int main(int argc, char *argv[]){
 	fileName = argv[1];
 	readFile(fileName);
-int tid;
-#pragma omp parallel num_threads(2) private(tid)
+#pragma omp parallel num_threads(11)
  {
-	tid = omp_get_thread_num();
-	//tid = 0;
-	const vector<bool>setB = setBB[tid];
-	const vector<int> setI =setII[tid];
-	const vector<double>& setD = setDD[tid];
-	switch(setI[3]){
+	const vector<bool>setB = setBB[0];
+	const vector<int> setI =setII[0];
+	const vector<double>& setD = setDD[0];
+	switch(omp_get_thread_num()){
 	case 0:{
 		Process<minstd_rand0> process (setB, setI,setD);
 		process.optimal();
@@ -70,7 +67,7 @@ int tid;
 		process.optimal();
 		break;
 	}
-	}
+}
 	//randTest();
 	//debugProblem();
 	//process.printOptions()
@@ -97,13 +94,11 @@ Process<T>::Process(const vector<bool>& setB, const vector<int>& setI,const vect
 	parseOptions(setB, setI,setD);
 	//set the parameters
 	   // set tabuS
-	if(setI[3] == 10){
+	randINT = &Process::randI;
+	generator.seed(seed);
+	if(omp_get_thread_num() == 10){
 		srand(seed);
 		randINT = &Process::randI2;
-	}
-	else {
-		randINT = &Process::randI;
-		generator.seed(seed);
 	}
 	if(tabu_flag){
 		tabuS = (int*) malloc(sizeof(int) * numVs);
@@ -585,17 +580,25 @@ void Process<T>::solvePart(int index){
 }
 template<class T>
 void Process<T>::optimal(){
-	if(omp_get_thread_num() == 0){
-		biasSingle(0);
-		solvePart(0);
-		biasSingle(2);
-		solvePart(2);
+	if(omp_get_thread_num()%2 == 0){
+		if(!sat0){
+			biasSingle(0);
+			solvePart(0);
+		}
+		if(!sat2){
+			biasSingle(2);
+			solvePart(2);
+		}
 	}
 	else{
-		biasSingle(2);
-		solvePart(2);
-		biasSingle(0);
-		solvePart(0);
+		if(!sat2){
+			biasSingle(2);
+			solvePart(2);
+		}
+		if(!sat0){
+			biasSingle(0);
+			solvePart(0);
+		}
 	}
 }
 
