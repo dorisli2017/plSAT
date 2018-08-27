@@ -548,7 +548,7 @@ void Process<T>::solve(){
 	unsatCs[randC]=unsatCs.back();
 	unsatCs.pop_back();
 	flipS(flipLindex);
-	flipsN++;
+	//flipsN++;
 	if(tabu_flag) tabuS[abs(flipLindex)]++;
 }
 template<class T>
@@ -576,7 +576,7 @@ void Process<T>::solvePart(int index){
 		unsatCs.pop_back();
 		flipO(flipLindex,index);
 		//flip(flipLindex);
-		flipsN++;
+		//flipsN++;
 		if(tabu_flag) tabuS[abs(flipLindex)]++;
 	}
 	return;
@@ -587,21 +587,21 @@ void Process<T>::optimal(){
 		cout << "solve 0"<<endl;
 		biasSingle(0);
 		solvePart(0);
-	#pragma omp critical
+/*	#pragma omp critical
 	{
 		testPart(0);
 		if(unsat[0].size() == 0) cout<< "SAT" << 0<< endl;
-	}
+	} */
 	}
 	if(omp_get_thread_num() == 1){
 		cout<< "solve 1" << endl;
 		biasSingle(2);
 		solvePart(2);
-	#pragma omp critical
+/*	#pragma omp critical
 	{
             testPart(2);
 	    if(unsat[2].size() == 0) cout<< "SAT" << 2<<endl;
-	}
+	}*/
 	}
 	 //cout<< "Flips:" << flipsN <<endl;
 //	}
