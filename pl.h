@@ -29,6 +29,8 @@
 #include <functional>
 using namespace std;
 bool inter = true;
+bool sat0 = false;
+bool sat2 = false;
 const vector<vector<bool>> setBB= {{true},{true}};
 //  maxSteps,fct,ict,cct,gen,seed
 const vector<vector<int>> setII= {{INT_MAX,2,100,10,0}, {INT_MAX,2,100,10,0}};

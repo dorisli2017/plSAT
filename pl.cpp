@@ -554,8 +554,11 @@ void Process<T>::solve(){
 template<class T>
 void Process<T>::solvePart(int index){
 	vector<int>& unsatCs = unsat[index];
+	bool& sat = (index == 0)? sat0: sat2;
 	while(true){
-		if (unsatCs.size()== 0){
+		if (sat || unsatCs.size()== 0){
+			sat = true;
+			cout << "solve "<< index << endl;
 			return;
 		}
 		int size = unsatCs.size();
@@ -565,7 +568,9 @@ void Process<T>::solvePart(int index){
 			unsatCs[randC]=unsatCs.back();
 			unsatCs.pop_back();
 			size--;
-			if(size == 0){
+			if(sat||size == 0){
+					sat = true;
+					cout << "solve "<< index << endl;
 			       	return;
 			}
 			randC = (this->*randINT)()%size;
@@ -575,69 +580,23 @@ void Process<T>::solvePart(int index){
 		unsatCs[randC]=unsatCs.back();
 		unsatCs.pop_back();
 		flipO(flipLindex,index);
-		//flip(flipLindex);
-		//flipsN++;
 		if(tabu_flag) tabuS[abs(flipLindex)]++;
 	}
-	return;
 }
 template<class T>
 void Process<T>::optimal(){
 	if(omp_get_thread_num() == 0){
-		cout << "solve 0"<<endl;
 		biasSingle(0);
 		solvePart(0);
-/*	#pragma omp critical
-	{
-		testPart(0);
-		if(unsat[0].size() == 0) cout<< "SAT" << 0<< endl;
-	} */
-	}
-	if(omp_get_thread_num() == 1){
-		cout<< "solve 1" << endl;
 		biasSingle(2);
 		solvePart(2);
-/*	#pragma omp critical
-	{
-            testPart(2);
-	    if(unsat[2].size() == 0) cout<< "SAT" << 2<<endl;
-	}*/
-	}
-	 //cout<< "Flips:" << flipsN <<endl;
-//	}
-	//solvePart(2);
-	//if(unsat[2].size()== 0) cout<< "SAT "<< 2 <<endl;
-	//setAssignment();
-	/*if (numUnsat == 0){
-		assert(numUnsat == (unsat[0].size()+unsat[1].size()+unsat[2].size()));
-		//#pragma omp critical
-		//{
-		//test();
-		//}
-		cout<< "s SATISFIABLE"<< endl;
-		//printAssignment();
-		//abort();
-		return;
 	}
 	else{
-		unsat[1].insert( unsat[1].end(), unsat[0].begin(), unsat[0].end());
-		unsat[1].insert( unsat[1].end(), unsat[2].begin(), unsat[2].end());
+		biasSingle(2);
+		solvePart(2);
+		biasSingle(0);
+		solvePart(0);
 	}
-	while(true){
-			if (numUnsat == 0){
-				assert(numUnsat == unsat[1].size());
-			//	#pragma omp critical
-				//{
-				//test();
-				//}
-			//
-				cout<< "s SATISFIABLE"<< endl;
-				//printAssignment();
-				//abort();
-				return;
-			}
-			solve();
-	}*/
 }
 
 template<class T>
