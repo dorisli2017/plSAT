@@ -109,7 +109,7 @@ Process<T>::Process(const vector<bool>& setB, const vector<int>& setI,const vect
 	numP = (int*) malloc(sizeof(int) * numCs);
 	probs = (double*)malloc(sizeof(double) * numVs);
 	assign = (bool*)malloc(sizeof(bool) * numVs);
-	unsat= new vector<int>[3];
+	unsat.reserve(numCs);
 	//biasAssignment();
 	//set lookuptable
 	switch (fct){
@@ -324,12 +324,8 @@ void Process<T>::printAssignment(){
 template<class T>
 void Process<T>::printUnsatCs(){
 	cout<< "Unsatisfied clauses ";
-	printVector(unsat[0]);
-	cout <<endl ;
-	printVector(unsat[1]);
-	cout <<endl ;
-	printVector(unsat[2]);
-	cout <<endl ;
+	printVector(unsat);
+
 }
 template<class T>
 void Process<T>::printNumP(){
@@ -449,7 +445,7 @@ void Process<T>::setAssignmentS(int partition){
 	   	}
 	   	for(int i = 0; i < numC1; i++){
 	   		if(numP[i] == 0){
-	   			unsat[0].push_back(i);
+	   			unsat.push_back(i);
 	   		}
 	   	}
 	   	return;
@@ -479,7 +475,7 @@ void Process<T>::setAssignmentS(int partition){
 	   	}
 	   	for(int i = numCc; i < numCs; i++){
 	   		if(numP[i] == 0){
-	   			unsat[2].push_back(i);
+	   			unsat.push_back(i);
 	   		}
 	   	}
 	   	return;
@@ -509,19 +505,9 @@ void Process<T>::setAssignment(){
 			}
    		}
    	}
-   	for(int i = 0; i < numC1; i++){
+   	for(int i = 0; i < numCs; i++){
    		if(numP[i] == 0){
-   			unsat[0].push_back(i);
-   		}
-   	}
-   	for(int i = numC1; i < numCc; i++){
-   		if(numP[i] == 0){
-   			unsat[1].push_back(i);
-   		}
-   	}
-   	for(int i = numCc; i < numCs; i++){
-   		if(numP[i] == 0){
-   			unsat[2].push_back(i);
+   			unsat.push_back(i);
    		}
    	}
 }
@@ -548,20 +534,19 @@ void Process<T>::solve(){
 }
 template<class T>
 void Process<T>::solvePart(int index){
-	vector<int>& unsatCs = unsat[index];
 	bool& sat = (index == 0)? sat0: sat2;
 	while(true){
-		if (sat || unsatCs.size()== 0){
+		if (sat || unsat.size()== 0){
 			sat = true;
 			cout << "solve "<< index << endl;
 			return;
 		}
-		int size = unsatCs.size();
+		int size = unsat.size();
 		int randC = (this->*randINT)()%size;
-		int flipCindex = unsatCs[randC];
+		int flipCindex = unsat[randC];
 		while(numP[flipCindex] > 0){
-			unsatCs[randC]=unsatCs.back();
-			unsatCs.pop_back();
+			unsat[randC]=unsat.back();
+			unsat.pop_back();
 			size--;
 			if(sat||size == 0){
 					sat = true;
@@ -569,11 +554,11 @@ void Process<T>::solvePart(int index){
 			       	return;
 			}
 			randC = (this->*randINT)()%size;
-			flipCindex = unsatCs[randC];
+			flipCindex = unsat[randC];
 		}
 		int flipLindex = getFlipLiteral(flipCindex,index);
-		unsatCs[randC]=unsatCs.back();
-		unsatCs.pop_back();
+		unsat[randC]=unsat.back();
+		unsat.pop_back();
 		flipO(flipLindex,index);
 		if(tabu_flag) tabuS[abs(flipLindex)]++;
 	}
@@ -695,7 +680,7 @@ void Process<T>::flipO(int literal,int partition){
 	for (int i = start; i <end; ++i){
 		numP[occList[i]]--;
 		if(numP[occList[i]] == 0){ 
-	 	   unsat[partition].push_back(occList[i]);
+	 	   unsat.push_back(occList[i]);
 		}
 	}
 	for (int i = startD; i <endD; ++i){
@@ -712,7 +697,7 @@ void Process<T>::flipS(int literal){
    		for (i = negC[literal].begin()+4; i != negC[literal].end(); ++i){
    			numP[*i]--;
    			if(numP[*i] == 0){
-   				unsat[1].push_back(*i);
+   				unsat.push_back(*i);
    			}
    		}
 		for (i = posC[literal].begin()+4; i != posC[literal].end(); ++i){
@@ -728,7 +713,7 @@ void Process<T>::flipS(int literal){
 		for (i = posC[-literal].begin()+4; i != posC[-literal].end(); ++i){
    			numP[*i]--;
    			if(numP[*i] == 0) {
-   				unsat[1].push_back(*i);
+   				unsat.push_back(*i);
    			}
 		}
 		assign[-literal]= false;
@@ -1009,15 +994,5 @@ template<class T>
 int Process<T>::randI2(){
 	return rand();
 };
-template<class T>
-void Process<T>::push(int cIndex){
-	assert(cIndex >= numCc);
-	if(cIndex < numC1) unsat[0].push_back(cIndex);
-	else{
-		if(cIndex < numCc) unsat[1].push_back(cIndex);
-		else unsat[2].push_back(cIndex);
-
-	}
-}
 
 
