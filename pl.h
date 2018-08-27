@@ -31,7 +31,7 @@ using namespace std;
 bool inter = true;
 bool sat0 = false;
 bool sat2 = false;
-
+bool* assignG;
 const vector<vector<bool>> setBB= {{false},{false}};
 //  maxSteps,fct,ict,cct,gen,seed
 const vector<vector<int>> setII= {{INT_MAX,2,100,10,0}, {INT_MAX,2,100,10,0}};
@@ -62,6 +62,8 @@ int getFlipCandidate_wa(int cIndex);
 int getFlipCandidate_max(int cIndex);
 void printVector(vector<int>& vec);
 void printUsage();
+void testLine(string line);
+void testPart(int partition);
 
 template<class T>
 class Process{
@@ -111,9 +113,7 @@ public:
 	void printAssignment();
 	void printUnsatCs();
 	void printNumP();
-	void testPart(int partition);
 	void test();
-	void testLine(string line);
 	void debugAssign();
 	int computeBreakScore(int literal);
 	int computeBreakScore0(int literal);

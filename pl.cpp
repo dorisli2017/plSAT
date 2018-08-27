@@ -72,6 +72,8 @@ int main(int argc, char *argv[]){
 	//debugProblem();
 	//process.printOptions()
 }	//process.debugAssign();
+ testPart(0);
+ testPart(2);
 }
 void debugProblem(){
 	printVariables();
@@ -185,6 +187,7 @@ void memAllocate(string buff){
 	clauses = new vector<int>[numCs];
 	posC= new vector<int>[numVs];
 	negC= new vector<int>[numVs];
+	assignG = (bool*)malloc(sizeof(bool) * numVs);
 	static const int arr[] = {4,0,0,0};
 	for(int i = 0; i < numVs; i++){
 		posC[i]= {4,0,0,0};
@@ -513,21 +516,20 @@ void Process<T>::setAssignment(){
 }
 template<class T>
 void Process<T>::solve(){
-	vector<int>& unsatCs = unsat[1];
-	int size = unsatCs.size();
+	int size = unsat.size();
 	int randC = (this->*randINT)()%size;
-	int flipCindex = unsatCs[randC];
+	int flipCindex = unsat[randC];
 	while(numP[flipCindex] > 0){
-		unsatCs[randC]=unsatCs.back();
-		unsatCs.pop_back();
+		unsat[randC]=unsat.back();
+		unsat.pop_back();
 		size--;
 		if(size == 0) return;
 		randC = (this->*randINT)()%size;
-		flipCindex = unsatCs[randC];
+		flipCindex = unsat[randC];
 	}
 	int flipLindex = getFlipLiteral(flipCindex,-1);
-	unsatCs[randC]=unsatCs.back();
-	unsatCs.pop_back();
+	unsat[randC]=unsat.back();
+	unsat.pop_back();
 	flipS(flipLindex);
 	//flipsN++;
 	if(tabu_flag) tabuS[abs(flipLindex)]++;
@@ -537,8 +539,23 @@ void Process<T>::solvePart(int index){
 	bool& sat = (index == 0)? sat0: sat2;
 	while(true){
 		if (sat || unsat.size()== 0){
-			sat = true;
-			cout << "solve "<< index << endl;
+			if(unsat.size()== 0){
+				sat = true;
+#pragma omp critical
+{
+if(index == 0){
+	for(int i = 0; i < numV1; i++){
+		assignG[i] = assign[i];
+	}
+}
+else{
+	for(int i = numV1; i < numVs; i++){
+		assignG[i] = assign[i];
+	}
+}
+}
+
+			}
 			return;
 		}
 		int size = unsat.size();
@@ -550,7 +567,22 @@ void Process<T>::solvePart(int index){
 			size--;
 			if(sat||size == 0){
 					sat = true;
-					cout << "solve "<< index << endl;
+					if(unsat.size()== 0){
+		#pragma omp critical
+		{
+		if(index == 0){
+			for(int i = 0; i < numV1; i++){
+				assignG[i] = assign[i];
+			}
+		}
+		else{
+			for(int i = numV1; i < numVs; i++){
+				assignG[i] = assign[i];
+			}
+		}
+		}
+
+					}
 			       	return;
 			}
 			randC = (this->*randINT)()%size;
@@ -719,8 +751,7 @@ void Process<T>::flipS(int literal){
 		assign[-literal]= false;
 	}
 }
-template<class T>
-void Process<T>::testPart(int partition){
+void testPart(int partition){
 	int num;
 	switch(partition){
 		case 0:num = numC1;break;
@@ -842,8 +873,7 @@ void Process<T>::test(){
    	}
    	cout<< "tested" << endl;
 }
-template<class T>
-void Process<T>::testLine(string line){
+void testLine(string line){
 	char* str = strdup(line.c_str());
     const char s[2] = " ";
     int lit;
@@ -852,7 +882,7 @@ void Process<T>::testLine(string line){
     while(token != NULL){
 		if(*token== '-'){
 			lit = atoi(token);
-			if(assign[-lit] == false) numT++;
+			if(assignG[-lit] == false) numT++;
 			token = strtok(NULL, s);
 			continue;
 		}
@@ -865,7 +895,7 @@ void Process<T>::testLine(string line){
 		    return;
 		}
 		lit = atoi(token);
-		if(assign[lit] == true) numT++;
+		if(assignG[lit] == true) numT++;
 		token = strtok(NULL, s);
     }
     cout<< line;
