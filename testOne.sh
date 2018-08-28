@@ -1,5 +1,5 @@
 #!/bin/bash
 for f in ../combine/*.combine;
 	do
-timeout 120 /usr/bin/time -f"wtime=%e" ./plf2 $f &>$f.plf2
+timeout 200s /usr/bin/time -f"wtime=%e" ./pl $f &>$f.pl
 	done

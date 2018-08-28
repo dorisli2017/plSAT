@@ -72,8 +72,8 @@ int main(int argc, char *argv[]){
 	//debugProblem();
 	//process.printOptions()
 }	//process.debugAssign();
- testPart(0);
- testPart(2);
+ //testPart(0);
+ //testPart(2);
 }
 void debugProblem(){
 	printVariables();
@@ -705,10 +705,6 @@ void Process<T>::flipO(int literal,int partition){
     case 1:start = occList[1]; end = occList[2];startD = deList[1]; endD = deList[2];break;
     case 2:start = occList[2]; end = occList[3];startD = deList[2]; endD = deList[3];break;
     }
-    assert(start == 4);
-    assert(startD == 4);
-    assert(end == occList.size());
-    assert(endD == deList.size());
 	for (int i = start; i <end; ++i){
 		numP[occList[i]]--;
 		if(numP[occList[i]] == 0){ 
