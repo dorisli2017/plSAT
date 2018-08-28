@@ -68,12 +68,9 @@ int main(int argc, char *argv[]){
 		break;
 	}
 }
-	//randTest();
-	//debugProblem();
-	//process.printOptions()
-}	//process.debugAssign();
-testPart(0);
-testPart(2);
+}
+ testPart(0,assignG);
+ testPart(2,assignG);
 }
 void debugProblem(){
 	printVariables();
@@ -424,6 +421,7 @@ void Process<T>::randomAssignment(){
 template<class T>
 void Process<T>::setAssignmentS(int partition){
     int startP, endP,startN, endN;
+    unsat.clear();
 	if(partition == 0){
 	   	for(int i = 0; i < numC1; i++){
 	   		numP[i] = 0;
@@ -540,7 +538,6 @@ void Process<T>::solvePart(int index){
 	while(true){
 		if(sat) return;
 		if (!sat && unsat.size()== 0){
-			sat = true;
 			if(index == 0){
 				#pragma omp critical
 				{
@@ -557,6 +554,7 @@ void Process<T>::solvePart(int index){
 					}
 				}
 			}
+			sat = true;
 			return;
 		}
 		int size = unsat.size();
@@ -601,26 +599,81 @@ void Process<T>::solvePart(int index){
 }
 template<class T>
 void Process<T>::optimal(){
-	if(omp_get_thread_num()%2 == 0){
-		if(!sat0){
-			biasSingle(0);
-			solvePart(0);
-		}
-		if(!sat2){
-			biasSingle(2);
-			solvePart(2);
+	bool odd = (omp_get_thread_num()%2 == 0);
+	bool& satF = odd? sat0:sat2;
+	bool& satS = odd? sat2:sat0;
+	int First = odd? 0:2;
+	int Second = odd?2:0;
+	if(!satF){
+		biasSingle(First);
+		solvePart(First);
+		if(unsat.size() != 0){
+			if(First == 0){
+				for(int i =0; i < numV1; i++){
+					assign[i] = assignG[i];
+				}
+			}
+			else{
+				for(int i =numV1; i < numVs; i++){
+					assign[i] = assignG[i];
+				}
+
+			}
 		}
 	}
 	else{
-		if(!sat2){
-			biasSingle(2);
-			solvePart(2);
+		if(First == 0){
+			for(int i =0; i < numV1; i++){
+				assign[i] = assignG[i];
+			}
 		}
-		if(!sat0){
-			biasSingle(0);
-			solvePart(0);
+		else{
+			for(int i =numV1; i < numVs; i++){
+				assign[i] = assignG[i];
+			}
+
 		}
+
 	}
+	if(!satS){
+		biasSingle(Second);
+		solvePart(Second);
+		if(unsat.size() != 0){
+			if(Second == 0){
+				for(int i =0; i < numV1; i++){
+					assign[i] = assignG[i];
+				}
+			}
+			else{
+				for(int i =numV1; i < numVs; i++){
+					assign[i] = assignG[i];
+				}
+
+			}
+
+		}
+
+	}
+	else{
+		if(Second == 0){
+			for(int i =0; i < numV1; i++){
+				assign[i] = assignG[i];
+			}
+		}
+		else{
+			for(int i =numV1; i < numVs; i++){
+				assign[i] = assignG[i];
+			}
+
+		}
+
+	}
+#pragma omp critical
+	{
+	 testPart(0,assign);
+	 testPart(2,assign);
+	}
+
 }
 
 template<class T>
@@ -751,7 +804,7 @@ void Process<T>::flipS(int literal){
 		assign[-literal]= false;
 	}
 }
-void testPart(int partition){
+void testPart(int partition, bool* assignG){
 	int num;
 	switch(partition){
 		case 0:num = numC1;break;

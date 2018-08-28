@@ -63,7 +63,7 @@ int getFlipCandidate_max(int cIndex);
 void printVector(vector<int>& vec);
 void printUsage();
 void testLine(string line);
-void testPart(int partition);
+void testPart(int partition, bool* assignG);
 
 template<class T>
 class Process{
