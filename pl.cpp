@@ -72,8 +72,8 @@ int main(int argc, char *argv[]){
 	//debugProblem();
 	//process.printOptions()
 }	//process.debugAssign();
- //testPart(0);
- //testPart(2);
+testPart(0);
+testPart(2);
 }
 void debugProblem(){
 	printVariables();
@@ -538,23 +538,24 @@ template<class T>
 void Process<T>::solvePart(int index){
 	bool& sat = (index == 0)? sat0: sat2;
 	while(true){
-		if (sat || unsat.size()== 0){
-			if(unsat.size()== 0){
-				sat = true;
-#pragma omp critical
-{
-if(index == 0){
-	for(int i = 0; i < numV1; i++){
-		assignG[i] = assign[i];
-	}
-}
-else{
-	for(int i = numV1; i < numVs; i++){
-		assignG[i] = assign[i];
-	}
-}
-}
-
+		if(sat) return;
+		if (!sat && unsat.size()== 0){
+			sat = true;
+			if(index == 0){
+				#pragma omp critical
+				{
+					for(int i = 0; i < numV1; i++){
+						assignG[i] = assign[i];
+					}
+				}
+			}
+			else{
+				#pragma omp critical
+				{
+					for(int i = numV1; i < numVs; i++){
+						assignG[i] = assign[i];
+					}
+				}
 			}
 			return;
 		}
@@ -565,32 +566,35 @@ else{
 			unsat[randC]=unsat.back();
 			unsat.pop_back();
 			size--;
-			if(sat||size == 0){
-					sat = true;
-					if(unsat.size()== 0){
-		#pragma omp critical
-		{
-		if(index == 0){
-			for(int i = 0; i < numV1; i++){
-				assignG[i] = assign[i];
-			}
-		}
-		else{
-			for(int i = numV1; i < numVs; i++){
-				assignG[i] = assign[i];
-			}
-		}
-		}
-
+			if(sat) return;
+			if (!sat && size == 0){
+				sat = true;
+				if(index == 0){
+					#pragma omp critical
+					{
+						for(int i = 0; i < numV1; i++){
+							assignG[i] = assign[i];
+						}
 					}
-			       	return;
+				}
+				else{
+					#pragma omp critical
+					{
+						for(int i = numV1; i < numVs; i++){
+							assignG[i] = assign[i];
+						}
+					}
+				}
+				return;
 			}
 			randC = (this->*randINT)()%size;
 			flipCindex = unsat[randC];
 		}
+		if(sat) return;
 		int flipLindex = getFlipLiteral(flipCindex,index);
 		unsat[randC]=unsat.back();
 		unsat.pop_back();
+		if(sat) return;
 		flipO(flipLindex,index);
 		if(tabu_flag) tabuS[abs(flipLindex)]++;
 	}
