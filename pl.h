@@ -31,6 +31,7 @@ using namespace std;
 bool inter = true;
 bool sat0 = false;
 bool sat2 = false;
+bool sat = false;
 bool* assignG;
 const vector<vector<bool>> setBB= {{false},{false}};
 //  maxSteps,fct,ict,cct,gen,seed

@@ -70,6 +70,7 @@ int main(int argc, char *argv[]){
 }
 }
  testPart(0,assignG);
+ testPart(1,assignG);
  testPart(2,assignG);
 }
 void debugProblem(){
@@ -486,6 +487,7 @@ void Process<T>::setAssignmentS(int partition){
 
 template<class T>
 void Process<T>::setAssignment(){
+    unsat.clear();
    	for(int i = 0; i < numCs; i++){
    		numP[i] = 0;
    	}
@@ -514,23 +516,47 @@ void Process<T>::setAssignment(){
 }
 template<class T>
 void Process<T>::solve(){
-	int size = unsat.size();
-	int randC = (this->*randINT)()%size;
-	int flipCindex = unsat[randC];
-	while(numP[flipCindex] > 0){
+	while(true){
+		if(sat) return;
+		if (!sat && unsat.size()== 0){
+			#pragma omp critical
+			{
+			for(int i = 0; i < numVs; i++){
+						assignG[i] = assign[i];
+			}
+			}
+			sat = true;
+			return;
+		}
+		int size = unsat.size();
+		int randC = (this->*randINT)()%size;
+		int flipCindex = unsat[randC];
+		while(numP[flipCindex] > 0){
+			unsat[randC]=unsat.back();
+			unsat.pop_back();
+			size--;
+			if(sat) return;
+			if (!sat && size == 0){
+				sat = true;
+				#pragma omp critical
+				{
+					for(int i = 0; i < numVs; i++){
+						assignG[i] = assign[i];
+					}
+				}
+				return;
+				}
+			randC = (this->*randINT)()%size;
+			flipCindex = unsat[randC];
+		}
+		if(sat) return;
+		int flipLindex = getFlipLiteral(flipCindex,-1);
 		unsat[randC]=unsat.back();
 		unsat.pop_back();
-		size--;
-		if(size == 0) return;
-		randC = (this->*randINT)()%size;
-		flipCindex = unsat[randC];
+		if(sat) return;
+		flipS(flipLindex);
+		if(tabu_flag) tabuS[abs(flipLindex)]++;
 	}
-	int flipLindex = getFlipLiteral(flipCindex,-1);
-	unsat[randC]=unsat.back();
-	unsat.pop_back();
-	flipS(flipLindex);
-	//flipsN++;
-	if(tabu_flag) tabuS[abs(flipLindex)]++;
 }
 template<class T>
 void Process<T>::solvePart(int index){
@@ -668,12 +694,8 @@ void Process<T>::optimal(){
 		}
 
 	}
-#pragma omp critical
-	{
-	 testPart(0,assign);
-	 testPart(2,assign);
-	}
-
+	setAssignment();
+	solve();
 }
 
 template<class T>
@@ -682,8 +704,11 @@ int Process<T>::getFlipLiteral(int cIndex, int partition){
 	int j=0,bre,min= numCs+1;
 	double sum=0,randD;
 	int greedyLiteral = 0, randomLiteral;
-	if(partition == 0) computeBreak = &Process::computeBreakScore0;
-	if(partition == 2)computeBreak = &Process::computeBreakScore2;
+	switch(partition){
+	case 0: computeBreak = &Process::computeBreakScore0; break;
+	case 2: computeBreak = &Process::computeBreakScore2; break;
+	case -1:computeBreak = &Process::computeBreakScore; break;
+	}
 	for (std::vector<int>::const_iterator i = vList.begin(); i != vList.end(); ++i){
 		bre = (this->*Process::computeBreak)(*i);
 		if(tabu_flag &&bre == 0 && tabuS[abs(*i)] == 0) return *i;
@@ -855,6 +880,7 @@ void testPart(int partition, bool* assignG){
 			getline(fp,buff);
 			line++;
    		}
+	   	line = 0;
 		while(!fp.eof()){
 			getline(fp,buff);
 			line++;
