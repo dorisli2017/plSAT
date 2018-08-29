@@ -592,7 +592,6 @@ void Process<T>::solvePart(int index){
 			size--;
 			if(sat) return;
 			if (!sat && size == 0){
-				sat = true;
 				if(index == 0){
 					#pragma omp critical
 					{
@@ -609,6 +608,7 @@ void Process<T>::solvePart(int index){
 						}
 					}
 				}
+				sat = true;
 				return;
 			}
 			randC = (this->*randINT)()%size;
