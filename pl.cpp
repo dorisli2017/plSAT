@@ -721,8 +721,14 @@ int Process<T>::getFlipLiteral57(int cIndex, int partition){
 	int j=0,bre,min= numCs+1;
 	double sum=0,randD;
 	int greedyLiteral = 0, randomLiteral;
+	switch(partition){
+	case 0: computeBreak = &Process::computeBreakScore0; break;
+	case 2: computeBreak = &Process::computeBreakScore2; break;
+	case -1:computeBreak = &Process::computeBreakScore; break;
+	}
 	for (std::vector<int>::const_iterator i = vList.begin(); i != vList.end(); ++i){
-		bre = breaks[abs(*i)];
+//		bre = breaks[abs(*i)];
+		bre = (this->*Process::computeBreak)(*i);
 		if(bre == 0){
 			clauseQ.push_back(*i);
 		}
