@@ -120,32 +120,38 @@ Process<T>::Process():distribution(0, INT_MAX){
 		cb = 2.06;
 		eps = 0.9;
 		fct = 0;
-		/*setAssignment =&Process::setAssignment;
-		getFlipLiteral =&Process::getFlipLiteral;
+		setAssignment =&Process::setAssignment3;
+		/*getFlipLiteral =&Process::getFlipLiteral;
 		flip = &Process::flip;*/
 	}
 	else if (maxL <=4){
 		initAssignment = &Process::randomAssignment;
 		cb = 2.85;
-	/*	setAssignment =&Process::setAssignment3;
-		getFlipLiteral =&Process::getFlipLiteral3;
+		setAssignment =&Process::setAssignment3;
+		/*getFlipLiteral =&Process::getFlipLiteral3;
 		flip = &Process::flip3;*/
 	}
 	else if(maxL <=5){
 		initAssignment = &Process::biasAssignment;
 		cb = 3.7;
-	/*	setAssignment =&Process::setAssignment57;
-		getFlipLiteral =&Process::getFlipLiteral57;
+		breaks = (int*) malloc(sizeof(int) * numVs);
+		critVar = (int*) malloc(sizeof(int) * numCs);
+		setAssignment =&Process::setAssignment57;
+		/*getFlipLiteral =&Process::getFlipLiteral57;
 		flip = &Process::flip57;*/
 	}
 	else if(maxL <= 6){
+		breaks = (int*) malloc(sizeof(int) * numVs);
+		critVar = (int*) malloc(sizeof(int) * numCs);
 		initAssignment = &Process::biasAssignment;
 		cb = 5.1;
-		/*setAssignment =&Process::setAssignment57;
-		getFlipLiteral =&Process::getFlipLiteral57;
+		setAssignment =&Process::setAssignment57;
+		/*getFlipLiteral =&Process::getFlipLiteral57;
 		flip = &Process::flip57;*/
 	}
 	else{
+		breaks = (int*) malloc(sizeof(int) * numVs);
+		critVar = (int*) malloc(sizeof(int) * numCs);
 		initAssignment = &Process::biasAssignment;
 		cb = 5.4;
 	/*	setAssignment =&Process::setAssignment57;
@@ -299,7 +305,6 @@ void parseLine(string line,int indexC){
 template<class T>
 void Process<T>::printOptions(){
 	printf("localSAT options: \n");
-	cout<<"c maxSteps: "<<maxSteps<<endl;
 	cout<<"c seed: "<<seed<<endl;
 	cout<<"c fct: "<<fct<<endl;
 	cout<<"c cct: "<<cct<<endl;
@@ -398,7 +403,7 @@ void Process<T>::biasAssignment(int partition){
 				assign[i] = false;
 			}
 	}
-	setAssignment(partition);
+	(this->*setAssignment)(partition);
 }
 template<class T>
 void Process<T>::randomAssignment(int partition){
@@ -411,42 +416,69 @@ void Process<T>::randomAssignment(int partition){
    	for(int j = vs; j < ve; j++){
    		assign[j] = ((this->*randINT)()%2 ==1);
    	}
-    setAssignment(partition);
+	(this->*setAssignment)(partition);
 }
+
 template<class T>
-void Process<T>::setAssignment(int partition){
+void Process<T>::setAssignment3(int partition){
 	unsat.clear();
-	int cs, ce,vs,ve, startP, endP,startN,endN;
+	int cs, ce;
 	switch(partition){
-	case 0:cs = 0; ce = numC1;vs = 0; ve = numV1; startP = 0; endP = 1; startN = 0; endN = 1;break;
-	case 2:cs = numCc; ce = numCs; vs = numV1; ve = numVs; startP = 2; endP = 3; startN = 2; endN = 3;break;
-	default: cs = 0; ce = numCs; vs = 0; ve = numVs;startP = 0; endP = 3; startN = 0; endN = 3;
+	case 0:cs = 0; ce = numC1;break;
+	case 2:cs = numCc; ce = numCs;break;
+	default: cs = 0; ce = numCs;
 	}
    	for(int i = cs; i < ce; i++){
    		numP[i] = 0;
    	}
-
-	for(int i = vs; i < ve; i++){
-		tabuS[i] =0;
-	}
-   	for(int j = vs; j < ve; j++){
-		if(assign[j] == false){
-	   		for (int i = negC[j][startN]; i < negC[j][endN]; ++i){
-	   			numP[negC[j][i]]++;
-	   		}
-		}
-		else{
-	   		for (int i = posC[j][startP]; i < posC[j][endP]; ++i){
-	   			numP[posC[j][i]]++;
-	   		}
+   	for(int j = cs; j < ce; j++){
+   		for (std::vector<int>::const_iterator i = clauses[j].begin(); i != clauses[j].end(); ++i){
+   			if(((*i) > 0 && (assign[*i]== true))||((*i) < 0 && assign[-*i]== false)){
+   				numP[j]++;
+   			}
+   		}
+   		if(numP[j] == 0){
+   			unsat.push_back(j);
    		}
    	}
+
+}
+template<class T>
+void Process<T>::setAssignment57(int partition){
+	unsat.clear();
+	int cs, ce, vs, ve;
+	switch(partition){
+	case 0:cs = 0; ce = numC1;vs = 0; ve = numV1;break;
+	case 2:cs = numCc; ce = numCs;vs = numV1; ve = numVs;break;
+	default: cs = 0; ce = numCs;vs = 0; ve = numVs;
+	}
    	for(int i = cs; i < ce; i++){
-   		if(numP[i] == 0){
-   			unsat.push_back(i);
+   		numP[i] = 0;
+   	}
+	for (int i = vs; i <= ve; i++) {
+		breaks[i] = 0;
+	}
+	int critV = 0;
+   	for(int j = cs; j < ce; j++){
+   		for (std::vector<int>::const_iterator i = clauses[j].begin(); i !=clauses[j].end(); ++i){
+   			if(((*i) > 0 && assign[*i]== true)||((*i) < 0 && assign[-*i]== false)){
+   				numP[j]++;
+   				critV = *i;
+   			}
+   		}
+   		if(numP[j] == 0){
+   			unsat.push_back(j);
+   		}
+   		else{
+   			if(numP[j] == 1){
+   				critV = abs(critV);
+   				critVar[j] = critV;
+   				breaks[critV]++;
+   			}
    		}
    	}
 }
+
 template<class T>
 void Process<T>::solve(){
 	while(true){
@@ -627,7 +659,7 @@ void Process<T>::optimal(){
 		}
 
 	}
-	setAssignment(-1);
+	(this->*setAssignment)(-1);
 	solve();
 }
 

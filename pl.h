@@ -79,13 +79,12 @@ class Process{
 	int* tabuS;
 	T generator;
 	double noise = 2.0;
+	int *breaks;
+	int *critVar;
 
 	/*settings*/
 	/*option values*/
-
-
-	int maxSteps;
-	int fct;
+	int fct = 1;
 	int cct;
 	double cb;
 	double eps;
@@ -106,7 +105,9 @@ public:
 	void (Process::*initAssignment)(int) = NULL;
 	void biasAssignment(int partition);
 	void randomAssignment(int partition);
-	void setAssignment(int partition);
+	void (Process::*setAssignment)(int partition) = NULL;
+	void setAssignment3(int partition);
+	void setAssignment57(int partition);
 	void printAssignment();
 	void printUnsatCs();
 	void printNumP();
