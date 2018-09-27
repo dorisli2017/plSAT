@@ -33,7 +33,6 @@ bool sat0 = false;
 bool sat2 = false;
 bool sat = false;
 bool* assignG;
-const vector<vector<bool>> setBB= {{false},{false}};
 //  maxSteps,fct,ict,cct,gen,seed
 const vector<vector<int>> setII= {{INT_MAX,2,100,10,0}, {INT_MAX,2,100,10,0}};
 const vector<vector<double>> setDD = {{3.6, 1.0,0.5},{3.6, 1.0,0.5}};
@@ -80,7 +79,6 @@ class Process{
 	T generator;
 
 	/*settings*/
-	bool tabu_flag;
 	/*option values*/
 
 
@@ -92,9 +90,9 @@ class Process{
 	double lct;
 
 public:
-	Process(const vector<bool>& setB, const vector<int>& setI,const vector<double>& setD);
+	Process(const vector<int>& setI,const vector<double>& setD);
 	void optimal();
-	void parseOptions(const vector<bool>& setB, const vector<int>& setI,const vector<double>& setD);
+	void parseOptions(const vector<int>& setI,const vector<double>& setD);
 	void printOptions();
 	double LookUpTable_exp(int literal);
 	double LookUpTable_poly(int literal);

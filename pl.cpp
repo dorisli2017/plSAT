@@ -12,66 +12,65 @@ int main(int argc, char *argv[]){
 	readFile(fileName);
 #pragma omp parallel num_threads(2)
  {
-	const vector<bool>setB = setBB[0];
 	const vector<int> setI =setII[0];
 	const vector<double>& setD = setDD[0];
 	switch(omp_get_thread_num()){
 	case 0:{
-		Process<minstd_rand0> process (setB, setI,setD);
+		Process<minstd_rand0> process (setI,setD);
 		process.optimal();
 		break;
 	}
 	case 1:{
-		Process<minstd_rand> process (setB, setI,setD);
+		Process<minstd_rand> process ( setI,setD);
 		process.optimal();
 		break;
 	}
 	case 2:{
-		Process<mt19937> process (setB, setI,setD);
+		Process<mt19937> process (setI,setD);
 		process.optimal();
 
 		break;
 	}
 	case 3:{
-		Process<mt19937_64> process (setB, setI,setD);
+		Process<mt19937_64> process ( setI,setD);
 		process.optimal();
 		break;
 	}
 	case 4:{
-		Process<ranlux24_base> process (setB, setI,setD);
+		Process<ranlux24_base> process ( setI,setD);
 		process.optimal();
 		break;
 	}
 	case 5:{
-		Process<ranlux48_base> process (setB, setI,setD);
+		Process<ranlux48_base> process ( setI,setD);
 		process.optimal();
 		break;
 	}
 	case 6:{
-		Process<ranlux24> process (setB, setI,setD);
+		Process<ranlux24> process (setI,setD);
 		process.optimal();
 		break;
 	}
 	case 7:{
-		Process<ranlux48> process (setB, setI,setD);
+		Process<ranlux48> process (setI,setD);
 		process.optimal();
 		break;
 	}
 	case 8:{
-		Process<knuth_b> process (setB, setI,setD);
+		Process<knuth_b> process (setI,setD);
 		process.optimal();
 		break;
 	}
 	default:{
-		Process<default_random_engine> process (setB, setI,setD);
+		Process<default_random_engine> process (setI,setD);
 		process.optimal();
 		break;
 	}
 }
 }
-// testPart(0,assignG);
-// testPart(1,assignG);
-// testPart(2,assignG);
+ testPart(0,assignG);
+ testPart(1,assignG);
+ testPart(2,assignG);
 }
 void debugProblem(){
 	printVariables();
@@ -90,8 +89,8 @@ void Process<T>::debugAssign(){
 
 }
 template<class T>
-Process<T>::Process(const vector<bool>& setB, const vector<int>& setI,const vector<double>& setD):distribution(0, INT_MAX){
-	parseOptions(setB, setI,setD);
+Process<T>::Process( const vector<int>& setI,const vector<double>& setD):distribution(0, INT_MAX){
+	parseOptions(setI,setD);
 	//set the parameters
 	   // set tabuS
 	randINT = &Process::randI;
@@ -100,12 +99,10 @@ Process<T>::Process(const vector<bool>& setB, const vector<int>& setI,const vect
 		srand(seed);
 		randINT = &Process::randI2;
 	}
-	if(tabu_flag){
 		tabuS = (int*) malloc(sizeof(int) * numVs);
 		for(int i = 0; i < numVs; i++){
 			tabuS[i] = 0;
 		}
-	}
 	numP = (int*) malloc(sizeof(int) * numCs);
 	probs = (double*)malloc(sizeof(double) * numVs);
 	assign = (bool*)malloc(sizeof(bool) * numVs);
@@ -126,9 +123,7 @@ Process<T>::Process(const vector<bool>& setB, const vector<int>& setI,const vect
  *using getopt_long to allow GNU-style long options as well as single-character options
  */
 template<class T>
-void Process<T>::parseOptions(const vector<bool>& setB, const vector<int>& setI,const vector<double>& setD){
-	tabu_flag = setB[0];
-
+void Process<T>::parseOptions(const vector<int>& setI,const vector<double>& setD){
 	maxSteps = setI[0];
 	fct= setI[1];
 	cct= setI[2];
@@ -274,7 +269,6 @@ void parseLine(string line,int indexC){
 template<class T>
 void Process<T>::printOptions(){
 	printf("localSAT options: \n");
-	cout<<"c tabu_flag: "<<tabu_flag<<endl;
 	cout<<"c maxSteps: "<<maxSteps<<endl;
 	cout<<"c seed: "<<seed<<endl;
 	cout<<"c fct: "<<fct<<endl;
@@ -427,10 +421,8 @@ void Process<T>::setAssignmentS(int partition){
 	   	for(int i = 0; i < numC1; i++){
 	   		numP[i] = 0;
 	   	}
-		if( tabu_flag && (this->*randINT)()%100<cct){
-			for(int i = 0; i < numVs; i++){
+		for(int i = 0; i < numVs; i++){
 				tabuS[i] =0;
-			}
 		}
 	   	for(int j = 0; j < numV1; j++){
 	   		startP = posC[j][0]; endP = posC[j][1];startN = negC[j][0]; endN = negC[j][1];
@@ -457,11 +449,9 @@ void Process<T>::setAssignmentS(int partition){
 	   	for(int i = numCc; i < numCs; i++){
 	   		numP[i] = 0;
 	   	}
-		if( tabu_flag && (this->*randINT)()%100<cct){
 			for(int i = 0; i < numVs; i++){
 				tabuS[i] =0;
 			}
-		}
 	   	for(int j = numV1; j < numVs; j++){
 			startP = posC[j][2]; endP = posC[j][3];startN = negC[j][2]; endN = negC[j][3];
 			if(assign[j] == false){
@@ -491,11 +481,10 @@ void Process<T>::setAssignment(){
    	for(int i = 0; i < numCs; i++){
    		numP[i] = 0;
    	}
-	if( tabu_flag && (this->*randINT)()%100<cct){
+
 		for(int i = 0; i < numVs; i++){
 			tabuS[i] =0;
 		}
-	}
    	for(int j = 0; j < numVs; j++){
 		if(assign[j] == false){
 	   		for (std::vector<int>::const_iterator i = negC[j].begin()+4; i != negC[j].end(); ++i){
@@ -555,7 +544,7 @@ void Process<T>::solve(){
 		unsat.pop_back();
 		if(sat) return;
 		flipS(flipLindex);
-		if(tabu_flag) tabuS[abs(flipLindex)]++;
+		tabuS[abs(flipLindex)]++;
 	}
 }
 template<class T>
@@ -620,7 +609,7 @@ void Process<T>::solvePart(int index){
 		unsat.pop_back();
 		if(sat) return;
 		flipO(flipLindex,index);
-		if(tabu_flag) tabuS[abs(flipLindex)]++;
+		tabuS[abs(flipLindex)]++;
 	}
 }
 template<class T>
@@ -711,7 +700,7 @@ int Process<T>::getFlipLiteral(int cIndex, int partition){
 	}
 	for (std::vector<int>::const_iterator i = vList.begin(); i != vList.end(); ++i){
 		bre = (this->*Process::computeBreak)(*i);
-		if(tabu_flag &&bre == 0 && tabuS[abs(*i)] == 0) return *i;
+		if(bre == 0 && tabuS[abs(*i)] == 0) return *i;
 		if(bre < min){
 			min = bre;
 			greedyLiteral = *i;
@@ -734,7 +723,7 @@ int Process<T>::getFlipLiteral(int cIndex, int partition){
 		randomLiteral= vList[i];
 		break;
 	}
-	if(tabu_flag &&tabuS[abs(greedyLiteral)] < tabuS[abs(randomLiteral)]){
+	if(tabuS[abs(greedyLiteral)] < tabuS[abs(randomLiteral)]){
 		return greedyLiteral;
 	}
 	return randomLiteral;
