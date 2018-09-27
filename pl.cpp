@@ -458,7 +458,7 @@ void Process<T>::solve(){
 		unsat[randC]=unsat.back();
 		unsat.pop_back();
 		if(sat) return;
-		flipS(flipLindex);
+		flip(flipLindex,-1);
 		tabuS[abs(flipLindex)]++;
 	}
 }
@@ -523,7 +523,7 @@ void Process<T>::solvePart(int index){
 		unsat[randC]=unsat.back();
 		unsat.pop_back();
 		if(sat) return;
-		flipO(flipLindex,index);
+		flip(flipLindex,index);
 		tabuS[abs(flipLindex)]++;
 	}
 }
@@ -643,43 +643,9 @@ int Process<T>::getFlipLiteral(int cIndex, int partition){
 	}
 	return randomLiteral;
 }
+
 template<class T>
-void Process<T>::flip(int literal){
-	int count = 0;
-	std::vector<int>::const_iterator i;
-	if(literal > 0){
-   		for (i = negC[literal].begin()+4; i != negC[literal].end(); ++i){
-   			numP[*i]--;
-			count++;
-   			if(numP[*i] == 0) push(*i);
-   		}
-		assert(count+4 == negC[literal][3]);
-		count = 0;
-		for (i = posC[literal].begin()+4; i != posC[literal].end(); ++i){
-   			count++;
-			numP[*i]++;
-		}
-		assert(count+4 == posC[literal][3]);
-		assign[literal] = true;
-	}
-	else{
-   		for (i = negC[-literal].begin()+4; i != negC[-literal].end(); ++i){
-   			count++;
-			numP[*i]++;
-   		}
-		assert(count+4 == negC[-literal][3]);
-		count= 0;
-		for (i = posC[-literal].begin()+4; i != posC[-literal].end(); ++i){
-   			numP[*i]--;
-			count++;
-   			if(numP[*i] == 0) push(*i);
-		}
-		assert(count+4 == posC[-literal][3]);
-		assign[-literal]= false;
-	}
-}
-template<class T>
-void Process<T>::flipO(int literal,int partition){
+void Process<T>::flip(int literal,int partition){
     int aIndex = abs(literal);
     vector<int>& occList =(literal < 0)? posC[aIndex] :negC[aIndex];
     vector<int>& deList =(literal < 0)? negC[aIndex] : posC[aIndex] ;
@@ -688,7 +654,6 @@ void Process<T>::flipO(int literal,int partition){
     switch(partition){
     case -1:start = occList[0];end = occList[3]; startD = deList[0];endD = deList[3]; break;
     case 0:start = occList[0]; end = occList[1];startD = deList[0]; endD = deList[1];break;
-    case 1:start = occList[1]; end = occList[2];startD = deList[1]; endD = deList[2];break;
     case 2:start = occList[2]; end = occList[3];startD = deList[2]; endD = deList[3];break;
     }
 	for (int i = start; i <end; ++i){
@@ -703,35 +668,6 @@ void Process<T>::flipO(int literal,int partition){
 
 	if(literal > 0)assign[literal] = true;
 	else assign[-literal] = false;
-}
-template<class T>
-void Process<T>::flipS(int literal){
-	std::vector<int>::const_iterator i;
-	if(literal > 0){
-   		for (i = negC[literal].begin()+4; i != negC[literal].end(); ++i){
-   			numP[*i]--;
-   			if(numP[*i] == 0){
-   				unsat.push_back(*i);
-   			}
-   		}
-		for (i = posC[literal].begin()+4; i != posC[literal].end(); ++i){
-   			numP[*i]++;
-		}
-
-		assign[literal] = true;
-	}
-	else{
-   		for (i = negC[-literal].begin()+4; i != negC[-literal].end(); ++i){
-   			numP[*i]++;
-   		}
-		for (i = posC[-literal].begin()+4; i != posC[-literal].end(); ++i){
-   			numP[*i]--;
-   			if(numP[*i] == 0) {
-   				unsat.push_back(*i);
-   			}
-		}
-		assign[-literal]= false;
-	}
 }
 void testPart(int partition, bool* assignG){
 	int num;

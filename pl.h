@@ -101,8 +101,7 @@ public:
 	void initLookUpTable_exp(void);
 	void initLookUpTable_poly(void);
 	int getFlipLiteral(int cIndex, int partition);
-	void flip(int literal);
-	void flipO(int literal, int partition);
+	void flip(int literal, int partition);
 	void (Process::*initAssignment)(int) = NULL;
 	void biasAssignment(int partition);
 	void randomAssignment(int partition);
@@ -121,6 +120,5 @@ public:
 	void solvePart(int index);
 	void push(int cIndex);
 	void solve();
-	void flipS(int literal);
 };
 #endif /* MAIN_H_ */
