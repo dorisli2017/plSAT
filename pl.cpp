@@ -681,10 +681,6 @@ int Process<T>::getFlipLiteral3(int cIndex, int partition){
 		if(bre == 0){
 			clauseQ.push_back(*i);
 		}
-		if(bre < min){
-			min = bre;
-			greedyLiteral = *i;
-		}
 		if(bre < numCs){
 		sum+= lookUpTable[bre];
 		}
@@ -720,21 +716,15 @@ int Process<T>::getFlipLiteral3(int cIndex, int partition){
 }
 template<class T>
 int Process<T>::getFlipLiteral57(int cIndex, int partition){
+	clauseQ.clear();
 	vector<int>&  vList = clauses[cIndex];
 	int j=0,bre,min= numCs+1;
 	double sum=0,randD;
 	int greedyLiteral = 0, randomLiteral;
-	switch(partition){
-	case 0: computeBreak = &Process::computeBreakScore0; break;
-	case 2: computeBreak = &Process::computeBreakScore2; break;
-	case -1:computeBreak = &Process::computeBreakScore; break;
-	}
 	for (std::vector<int>::const_iterator i = vList.begin(); i != vList.end(); ++i){
-		bre = (this->*Process::computeBreak)(*i);
-		if(bre == 0 && tabuS[abs(*i)] == 0) return *i;
-		if(bre < min){
-			min = bre;
-			greedyLiteral = *i;
+		bre = breaks[abs(*i)];
+		if(bre == 0){
+			clauseQ.push_back(*i);
 		}
 		if(bre < numCs){
 		sum+= lookUpTable[bre];
@@ -745,6 +735,25 @@ int Process<T>::getFlipLiteral57(int cIndex, int partition){
 		probs[j]= sum;
 		j++;
 	}
+	int cS = clauseQ.size();
+	if(cS > 0){
+		double temp = noise * (double)flipCount/numVs;
+		int index = (this->*randINT)()%cS;
+		if(cS< numCs){
+			temp= temp*lookUpTable[cS];
+		}
+		else{
+		temp=  temp*(this->*Process::lookUp)(cS);
+		}
+		for(int i =0; i < cS; i++){
+			greedyLiteral = clauseQ[index];
+			if(tabuS[abs(greedyLiteral)] < temp){
+				return greedyLiteral;
+			}
+			index = (index+1)%cS;
+		}
+
+	}
 	randD = ((double)(this->*randINT)()/RAND_MAX)*sum;
 	assert(randD >= 0);
 	for(int i = 0; i < j;i++){
@@ -753,9 +762,6 @@ int Process<T>::getFlipLiteral57(int cIndex, int partition){
 		}
 		randomLiteral= vList[i];
 		break;
-	}
-	if(tabuS[abs(greedyLiteral)] < tabuS[abs(randomLiteral)]){
-		return greedyLiteral;
 	}
 	return randomLiteral;
 }
