@@ -793,19 +793,44 @@ void Process<T>::flip57(int literal,int partition){
     vector<int>& deList =(literal < 0)? negC[aIndex] : posC[aIndex] ;
     int start, end;
     int startD, endD;
+    int cla; int num;
     switch(partition){
     case -1:start = occList[0];end = occList[3]; startD = deList[0];endD = deList[3]; break;
     case 0:start = occList[0]; end = occList[1];startD = deList[0]; endD = deList[1];break;
     case 2:start = occList[2]; end = occList[3];startD = deList[2]; endD = deList[3];break;
     }
 	for (int i = start; i <end; ++i){
-		numP[occList[i]]--;
-		if(numP[occList[i]] == 0){ 
-	 	   unsat.push_back(occList[i]);
+		cla = occList[i];
+		num = numP[occList[i]];
+		if(num == 1){
+			breaks[aIndex]--;
+			unsat.push_back(cla);
 		}
+		else if(num == 2){
+			int aj;
+			for(std::vector<int>::const_iterator j = clauses[cla].begin(); j != clauses[cla].end(); ++j){
+				aj = abs(*j);
+				if (((*j)==aj)== assign[aj]) {
+					critVar[cla] = aj;
+					breaks[aj]++;
+					break;
+				}
+			}
+
+		}
+		numP[cla]--;
 	}
 	for (int i = startD; i <endD; ++i){
-		numP[deList[i]]++;
+		cla = deList[i];
+		num = numP[deList[i]];
+		if(num== 0){
+			critVar[cla] = aIndex;
+			breaks[aIndex]++;
+		}
+		else if(num == 1){
+			breaks[critVar[cla]]--;
+		}
+		numP[cla]++;
 	}
 
 	if(literal > 0)assign[literal] = true;
