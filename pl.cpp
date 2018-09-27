@@ -10,7 +10,7 @@
 int main(int argc, char *argv[]){
 	fileName = argv[1];
 	readFile(fileName);
-#pragma omp parallel num_threads(11)
+#pragma omp parallel num_threads(2)
  {
 	const vector<bool>setB = setBB[0];
 	const vector<int> setI =setII[0];
@@ -69,9 +69,9 @@ int main(int argc, char *argv[]){
 	}
 }
 }
- testPart(0,assignG);
- testPart(1,assignG);
- testPart(2,assignG);
+// testPart(0,assignG);
+// testPart(1,assignG);
+// testPart(2,assignG);
 }
 void debugProblem(){
 	printVariables();
