@@ -97,6 +97,7 @@ template<class T>
 Process<T>::Process():distribution(0, INT_MAX){
 	//set the parameters
 	   // set tabuS
+	clauseQ.reserve(maxL);
 	if(omp_get_thread_num() == 0){
 		srand(seed);
 		randINT = &Process::randI2;
@@ -665,6 +666,7 @@ void Process<T>::optimal(){
 
 template<class T>
 int Process<T>::getFlipLiteral3(int cIndex, int partition){
+	clauseQ.clear();
 	vector<int>&  vList = clauses[cIndex];
 	int j=0,bre,min= numCs+1;
 	double sum=0,randD;
@@ -676,7 +678,9 @@ int Process<T>::getFlipLiteral3(int cIndex, int partition){
 	}
 	for (std::vector<int>::const_iterator i = vList.begin(); i != vList.end(); ++i){
 		bre = (this->*Process::computeBreak)(*i);
-		if(bre == 0 && tabuS[abs(*i)] == 0) return *i;
+		if(bre == 0){
+			clauseQ.push_back(*i);
+		}
 		if(bre < min){
 			min = bre;
 			greedyLiteral = *i;
@@ -690,6 +694,19 @@ int Process<T>::getFlipLiteral3(int cIndex, int partition){
 		probs[j]= sum;
 		j++;
 	}
+	int cS = clauseQ.size();
+	if(cS > 0){
+		double temp = noise * (double)flipCount/numVs;
+		int index = (this->*randINT)()%cS;
+		for(int i =0; i < cS; i++){
+			greedyLiteral = clauseT[index];
+			if(tabuS[abs(greedyLiteral)] < temp){
+				return greedyLiteral;
+			}
+			index = (index+1)%cS;
+		}
+
+	}
 	randD = ((double)(this->*randINT)()/RAND_MAX)*sum;
 	assert(randD >= 0);
 	for(int i = 0; i < j;i++){
@@ -698,9 +715,6 @@ int Process<T>::getFlipLiteral3(int cIndex, int partition){
 		}
 		randomLiteral= vList[i];
 		break;
-	}
-	if(tabuS[abs(greedyLiteral)] < tabuS[abs(randomLiteral)]){
-		return greedyLiteral;
 	}
 	return randomLiteral;
 }
@@ -747,6 +761,7 @@ int Process<T>::getFlipLiteral57(int cIndex, int partition){
 }
 template<class T>
 void Process<T>::flip3(int literal,int partition){
+	flipCount++;
     int aIndex = abs(literal);
     vector<int>& occList =(literal < 0)? posC[aIndex] :negC[aIndex];
     vector<int>& deList =(literal < 0)? negC[aIndex] : posC[aIndex] ;
@@ -772,6 +787,7 @@ void Process<T>::flip3(int literal,int partition){
 }
 template<class T>
 void Process<T>::flip57(int literal,int partition){
+	flipCount++;
     int aIndex = abs(literal);
     vector<int>& occList =(literal < 0)? posC[aIndex] :negC[aIndex];
     vector<int>& deList =(literal < 0)? negC[aIndex] : posC[aIndex] ;

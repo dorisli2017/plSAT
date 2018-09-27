@@ -89,6 +89,8 @@ class Process{
 	double cb;
 	double eps;
 	double lct;
+	long long int flipCount = 0;
+	vector<int> clauseQ;
 
 public:
 	Process();
