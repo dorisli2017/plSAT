@@ -121,15 +121,15 @@ Process<T>::Process():distribution(0, INT_MAX){
 		eps = 0.9;
 		fct = 0;
 		setAssignment =&Process::setAssignment3;
-		/*getFlipLiteral =&Process::getFlipLiteral;
-		flip = &Process::flip;*/
+		getFlipLiteral =&Process::getFlipLiteral3;
+		flip = &Process::flip3;
 	}
 	else if (maxL <=4){
 		initAssignment = &Process::randomAssignment;
 		cb = 2.85;
 		setAssignment =&Process::setAssignment3;
-		/*getFlipLiteral =&Process::getFlipLiteral3;
-		flip = &Process::flip3;*/
+		getFlipLiteral =&Process::getFlipLiteral3;
+		flip = &Process::flip3;
 	}
 	else if(maxL <=5){
 		initAssignment = &Process::biasAssignment;
@@ -137,8 +137,8 @@ Process<T>::Process():distribution(0, INT_MAX){
 		breaks = (int*) malloc(sizeof(int) * numVs);
 		critVar = (int*) malloc(sizeof(int) * numCs);
 		setAssignment =&Process::setAssignment57;
-		/*getFlipLiteral =&Process::getFlipLiteral57;
-		flip = &Process::flip57;*/
+		getFlipLiteral =&Process::getFlipLiteral57;
+		flip = &Process::flip57;
 	}
 	else if(maxL <= 6){
 		breaks = (int*) malloc(sizeof(int) * numVs);
@@ -146,17 +146,17 @@ Process<T>::Process():distribution(0, INT_MAX){
 		initAssignment = &Process::biasAssignment;
 		cb = 5.1;
 		setAssignment =&Process::setAssignment57;
-		/*getFlipLiteral =&Process::getFlipLiteral57;
-		flip = &Process::flip57;*/
+		getFlipLiteral =&Process::getFlipLiteral57;
+		flip = &Process::flip57;
 	}
 	else{
 		breaks = (int*) malloc(sizeof(int) * numVs);
 		critVar = (int*) malloc(sizeof(int) * numCs);
 		initAssignment = &Process::biasAssignment;
 		cb = 5.4;
-	/*	setAssignment =&Process::setAssignment57;
+		setAssignment =&Process::setAssignment57;
 		getFlipLiteral =&Process::getFlipLiteral57;
-		flip = &Process::flip57;*/
+		flip = &Process::flip57;
 	}
 	switch (fct){
 	case 0:initLookUpTable_poly();
@@ -515,11 +515,11 @@ void Process<T>::solve(){
 			flipCindex = unsat[randC];
 		}
 		if(sat) return;
-		int flipLindex = getFlipLiteral(flipCindex,-1);
+		int flipLindex = (this->*getFlipLiteral)(flipCindex,-1);
 		unsat[randC]=unsat.back();
 		unsat.pop_back();
 		if(sat) return;
-		flip(flipLindex,-1);
+		(this->*flip)(flipLindex,-1);
 		tabuS[abs(flipLindex)]++;
 	}
 }
@@ -580,11 +580,11 @@ void Process<T>::solvePart(int index){
 			flipCindex = unsat[randC];
 		}
 		if(sat) return;
-		int flipLindex = getFlipLiteral(flipCindex,index);
+		int flipLindex = (this->*getFlipLiteral)(flipCindex,index);
 		unsat[randC]=unsat.back();
 		unsat.pop_back();
 		if(sat) return;
-		flip(flipLindex,index);
+		(this->*flip)(flipLindex,index);
 		tabuS[abs(flipLindex)]++;
 	}
 }
@@ -664,7 +664,7 @@ void Process<T>::optimal(){
 }
 
 template<class T>
-int Process<T>::getFlipLiteral(int cIndex, int partition){
+int Process<T>::getFlipLiteral3(int cIndex, int partition){
 	vector<int>&  vList = clauses[cIndex];
 	int j=0,bre,min= numCs+1;
 	double sum=0,randD;
@@ -704,9 +704,74 @@ int Process<T>::getFlipLiteral(int cIndex, int partition){
 	}
 	return randomLiteral;
 }
-
 template<class T>
-void Process<T>::flip(int literal,int partition){
+int Process<T>::getFlipLiteral57(int cIndex, int partition){
+	vector<int>&  vList = clauses[cIndex];
+	int j=0,bre,min= numCs+1;
+	double sum=0,randD;
+	int greedyLiteral = 0, randomLiteral;
+	switch(partition){
+	case 0: computeBreak = &Process::computeBreakScore0; break;
+	case 2: computeBreak = &Process::computeBreakScore2; break;
+	case -1:computeBreak = &Process::computeBreakScore; break;
+	}
+	for (std::vector<int>::const_iterator i = vList.begin(); i != vList.end(); ++i){
+		bre = (this->*Process::computeBreak)(*i);
+		if(bre == 0 && tabuS[abs(*i)] == 0) return *i;
+		if(bre < min){
+			min = bre;
+			greedyLiteral = *i;
+		}
+		if(bre < numCs){
+		sum+= lookUpTable[bre];
+		}
+		else{
+		sum+=(this->*Process::lookUp)(bre);
+		}
+		probs[j]= sum;
+		j++;
+	}
+	randD = ((double)(this->*randINT)()/RAND_MAX)*sum;
+	assert(randD >= 0);
+	for(int i = 0; i < j;i++){
+		if(probs[i]< randD){
+			continue;
+		}
+		randomLiteral= vList[i];
+		break;
+	}
+	if(tabuS[abs(greedyLiteral)] < tabuS[abs(randomLiteral)]){
+		return greedyLiteral;
+	}
+	return randomLiteral;
+}
+template<class T>
+void Process<T>::flip3(int literal,int partition){
+    int aIndex = abs(literal);
+    vector<int>& occList =(literal < 0)? posC[aIndex] :negC[aIndex];
+    vector<int>& deList =(literal < 0)? negC[aIndex] : posC[aIndex] ;
+    int start, end;
+    int startD, endD;
+    switch(partition){
+    case -1:start = occList[0];end = occList[3]; startD = deList[0];endD = deList[3]; break;
+    case 0:start = occList[0]; end = occList[1];startD = deList[0]; endD = deList[1];break;
+    case 2:start = occList[2]; end = occList[3];startD = deList[2]; endD = deList[3];break;
+    }
+	for (int i = start; i <end; ++i){
+		numP[occList[i]]--;
+		if(numP[occList[i]] == 0){
+	 	   unsat.push_back(occList[i]);
+		}
+	}
+	for (int i = startD; i <endD; ++i){
+		numP[deList[i]]++;
+	}
+
+	if(literal > 0)assign[literal] = true;
+	else assign[-literal] = false;
+}
+template<class T>
+void Process<T>::flip57(int literal,int partition){
     int aIndex = abs(literal);
     vector<int>& occList =(literal < 0)? posC[aIndex] :negC[aIndex];
     vector<int>& deList =(literal < 0)? negC[aIndex] : posC[aIndex] ;

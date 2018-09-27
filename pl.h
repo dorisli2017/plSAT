@@ -100,8 +100,12 @@ public:
 	int (Process::*computeBreak)(int) = NULL;
 	void initLookUpTable_exp(void);
 	void initLookUpTable_poly(void);
-	int getFlipLiteral(int cIndex, int partition);
-	void flip(int literal, int partition);
+	int (Process::*getFlipLiteral)(int cIndex, int partition);
+	int getFlipLiteral3(int cIndex, int partition);
+	int getFlipLiteral57(int cIndex, int partition);
+	void (Process::*flip)(int literal, int partition);
+	void flip3(int literal, int partition);
+	void flip57(int literal, int partition);
 	void (Process::*initAssignment)(int) = NULL;
 	void biasAssignment(int partition);
 	void randomAssignment(int partition);
