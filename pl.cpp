@@ -699,7 +699,7 @@ int Process<T>::getFlipLiteral3(int cIndex, int partition){
 		double temp = noise * (double)flipCount/numVs;
 		int index = (this->*randINT)()%cS;
 		for(int i =0; i < cS; i++){
-			greedyLiteral = clauseT[index];
+			greedyLiteral = clauseQ[index];
 			if(tabuS[abs(greedyLiteral)] < temp){
 				return greedyLiteral;
 			}
