@@ -117,6 +117,7 @@ Process<T>::Process( const vector<int>& setI,const vector<double>& setD):distrib
 			lookUp =&Process::LookUpTable_exp;
 			break;
 	}
+	initAssignment = &Process::biasAssignment;
 }
 
 /*parse the argument (including options and filename)
@@ -353,151 +354,65 @@ void initialAssignment(){
 	}
 }
 template<class T>
-void Process<T>::biasAssignment(){
-	for(int i = 0; i < numVs; i++){
-			if(posC[i][3] > negC[i][3]){
+void Process<T>::biasAssignment(int partition){
+	int vs,ve, start,end;
+	switch(partition){
+	case 0: vs = 0; ve = numV1; start = 0; end = 1; break;
+	case 1: vs = numV1; ve = numVs; start = 2; end = 3;break;
+	default:vs = 0; ve = numVs; start = 0; end = 3;
+	}
+	for(int i = vs; i < ve; i++){
+			if((posC[i][end]-posC[i][start]) > (negC[i][end]-negC[i][start])){
 				assign[i] = true;
 			}
 			else{
 				assign[i] = false;
 			}
 	}
-	setAssignment();
+	setAssignment(partition);
 }
 template<class T>
-void Process<T>::biasSingle(int partition){
-	if(partition == 0){
-		for(int i = 0; i < numV1; i++){
-				if(posC[i][1] > negC[i][1]){
-					assign[i] = true;
-				}
-				else{
-					assign[i] = false;
-				}
-		}
-		setAssignmentS(0);
-		return;
+void Process<T>::randomAssignment(int partition){
+	int vs,ve;
+	switch(partition){
+	case 0: vs = 0; ve = numV1; break;
+	case 1: vs = numV1; ve = numVs; break;
+	default:vs = 0; ve = numVs;
 	}
-	if(partition == 2){
-		for(int i = numV1; i < numVs; i++){
-				if((posC[i][3]-posC[i][2]) > (negC[i][3]-negC[i][2])){
-					assign[i] = true;
-				}
-				else{
-					assign[i] = false;
-				}
-		}
-		setAssignmentS(2);
-		return;
-	}
-	assert(false);
-}
-template<class T>
-void Process<T>::randomBiasAssignment(){
-	int sum;
-	for(int i = 0; i < numVs; i++){
-		sum = posC[i][3] +negC[i][3];
-		if(sum == 0){
-			assign[i] = true;
-		}
-		else{
-			assign[i] = ((this->*randINT)()%sum)<posC[i][3];
-		}
-	}
-	setAssignment();
-}
-template<class T>
-void Process<T>::randomAssignment(){
-   	for(int j = 0; j < numVs; j++){
+   	for(int j = vs; j < ve; j++){
    		assign[j] = ((this->*randINT)()%2 ==1);
    	}
-    setAssignment();
+    setAssignment(partition);
 }
 template<class T>
-void Process<T>::setAssignmentS(int partition){
-    int startP, endP,startN, endN;
-    unsat.clear();
-	if(partition == 0){
-	   	for(int i = 0; i < numC1; i++){
-	   		numP[i] = 0;
-	   	}
-		for(int i = 0; i < numVs; i++){
-				tabuS[i] =0;
-		}
-	   	for(int j = 0; j < numV1; j++){
-	   		startP = posC[j][0]; endP = posC[j][1];startN = negC[j][0]; endN = negC[j][1];
-			if(assign[j] == false){
-		   		for (int i = startN; i< endN; ++i){
-		   			numP[negC[j][i]]++;
-		   		}
-			}
-			else{
-				for (int i = startP; i< endP; ++i){
-					numP[posC[j][i]]++;
-				}
-	   		}
-	   	}
-	   	for(int i = 0; i < numC1; i++){
-	   		if(numP[i] == 0){
-	   			unsat.push_back(i);
-	   		}
-	   	}
-	   	return;
+void Process<T>::setAssignment(int partition){
+	unsat.clear();
+	int cs, ce,vs,ve, startP, endP,startN,endN;
+	switch(partition){
+	case 0:cs = 0; ce = numC1;vs = 0; ve = numV1; startP = 0; endP = 1; startN = 0; endN = 1;break;
+	case 2:cs = numCc; ce = numCs; vs = numV1; ve = numVs; startP = 2; endP = 3; startN = 2; endN = 3;break;
+	default: cs = 0; ce = numCs; vs = 0; ve = numVs;startP = 0; endP = 3; startN = 0; endN = 3;
 	}
-
-	if(partition == 2){
-	   	for(int i = numCc; i < numCs; i++){
-	   		numP[i] = 0;
-	   	}
-			for(int i = 0; i < numVs; i++){
-				tabuS[i] =0;
-			}
-	   	for(int j = numV1; j < numVs; j++){
-			startP = posC[j][2]; endP = posC[j][3];startN = negC[j][2]; endN = negC[j][3];
-			if(assign[j] == false){
-		   		for (int i = startN; i< endN; ++i){
-		   			numP[negC[j][i]]++;
-		   		}
-			}
-			else{
-				for (int i = startP; i< endP; ++i){
-					numP[posC[j][i]]++;
-				}
-	   		}
-	   	}
-	   	for(int i = numCc; i < numCs; i++){
-	   		if(numP[i] == 0){
-	   			unsat.push_back(i);
-	   		}
-	   	}
-	   	return;
-	}
-	assert(false);
-}
-
-template<class T>
-void Process<T>::setAssignment(){
-    unsat.clear();
-   	for(int i = 0; i < numCs; i++){
+   	for(int i = cs; i < ce; i++){
    		numP[i] = 0;
    	}
 
-		for(int i = 0; i < numVs; i++){
-			tabuS[i] =0;
-		}
-   	for(int j = 0; j < numVs; j++){
+	for(int i = vs; i < ve; i++){
+		tabuS[i] =0;
+	}
+   	for(int j = vs; j < ve; j++){
 		if(assign[j] == false){
-	   		for (std::vector<int>::const_iterator i = negC[j].begin()+4; i != negC[j].end(); ++i){
-	   			numP[*i]++;
+	   		for (int i = negC[j][startN]; i < negC[j][endN]; ++i){
+	   			numP[negC[j][i]]++;
 	   		}
 		}
 		else{
-			for (std::vector<int>::const_iterator i = posC[j].begin()+4; i != posC[j].end(); ++i){
-	   			numP[*i]++;
-			}
+	   		for (int i = posC[j][startP]; i < posC[j][endP]; ++i){
+	   			numP[posC[j][i]]++;
+	   		}
    		}
    	}
-   	for(int i = 0; i < numCs; i++){
+   	for(int i = cs; i < ce; i++){
    		if(numP[i] == 0){
    			unsat.push_back(i);
    		}
@@ -620,7 +535,7 @@ void Process<T>::optimal(){
 	int First = odd? 0:2;
 	int Second = odd?2:0;
 	if(!satF){
-		biasSingle(First);
+		(this->*initAssignment)(First);
 		solvePart(First);
 		if(unsat.size() != 0){
 			if(First == 0){
@@ -651,7 +566,7 @@ void Process<T>::optimal(){
 
 	}
 	if(!satS){
-		biasSingle(Second);
+		(this->*initAssignment)(Second);
 		solvePart(Second);
 		if(unsat.size() != 0){
 			if(Second == 0){
@@ -683,7 +598,7 @@ void Process<T>::optimal(){
 		}
 
 	}
-	setAssignment();
+	setAssignment(-1);
 	solve();
 }
 

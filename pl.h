@@ -103,12 +103,10 @@ public:
 	int getFlipLiteral(int cIndex, int partition);
 	void flip(int literal);
 	void flipO(int literal, int partition);
-	void biasAssignment();
-	void biasSingle(int partition);
-	void randomBiasAssignment();
-	void randomAssignment();
-	void setAssignment();
-	void setAssignmentS(int partition);
+	void (Process::*initAssignment)(int) = NULL;
+	void biasAssignment(int partition);
+	void randomAssignment(int partition);
+	void setAssignment(int partition);
 	void printAssignment();
 	void printUnsatCs();
 	void printNumP();
