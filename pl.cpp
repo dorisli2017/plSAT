@@ -16,53 +16,58 @@ int main(int argc, char *argv[]){
 	const vector<double>& setD = setDD[0];
 	switch(omp_get_thread_num()){
 	case 0:{
-		Process<minstd_rand0> process (setI,setD);
+		Process<minstd_rand0> process;
 		process.optimal();
 		break;
 	}
 	case 1:{
-		Process<minstd_rand> process ( setI,setD);
+		Process<minstd_rand> process;
 		process.optimal();
 		break;
 	}
 	case 2:{
-		Process<mt19937> process (setI,setD);
+		Process<mt19937> process;
 		process.optimal();
 
 		break;
 	}
 	case 3:{
-		Process<mt19937_64> process ( setI,setD);
+		Process<mt19937_64> process;
 		process.optimal();
 		break;
 	}
 	case 4:{
-		Process<ranlux24_base> process ( setI,setD);
+		Process<ranlux24_base> process;
 		process.optimal();
 		break;
 	}
 	case 5:{
-		Process<ranlux48_base> process ( setI,setD);
+		Process<ranlux48_base> process;
 		process.optimal();
 		break;
 	}
 	case 6:{
-		Process<ranlux24> process (setI,setD);
+		Process<ranlux24> process;
 		process.optimal();
 		break;
 	}
 	case 7:{
-		Process<ranlux48> process (setI,setD);
+		Process<ranlux48> process;
 		process.optimal();
 		break;
 	}
 	case 8:{
-		Process<knuth_b> process (setI,setD);
+		Process<knuth_b> process;
 		process.optimal();
 		break;
 	}
-	default:{
-		Process<default_random_engine> process (setI,setD);
+	case 9:{
+		Process<default_random_engine> process;
+		process.optimal();
+		break;
+	}
+	case 10:{
+		Process<minstd_rand0> process;
 		process.optimal();
 		break;
 	}
@@ -89,15 +94,17 @@ void Process<T>::debugAssign(){
 
 }
 template<class T>
-Process<T>::Process( const vector<int>& setI,const vector<double>& setD):distribution(0, INT_MAX){
-	parseOptions(setI,setD);
+Process<T>::Process():distribution(0, INT_MAX){
 	//set the parameters
 	   // set tabuS
-	randINT = &Process::randI;
-	generator.seed(seed);
-	if(omp_get_thread_num() == 10){
+	if(omp_get_thread_num() == 0){
 		srand(seed);
 		randINT = &Process::randI2;
+	}
+	else{
+		randINT = &Process::randI;
+		generator.seed(seed);
+
 	}
 		tabuS = (int*) malloc(sizeof(int) * numVs);
 		for(int i = 0; i < numVs; i++){
@@ -107,8 +114,44 @@ Process<T>::Process( const vector<int>& setI,const vector<double>& setD):distrib
 	probs = (double*)malloc(sizeof(double) * numVs);
 	assign = (bool*)malloc(sizeof(bool) * numVs);
 	unsat.reserve(numCs);
-	//biasAssignment();
-	//set lookuptable
+
+	if(maxL <= 3){
+		initAssignment = &Process::randomAssignment;
+		cb = 2.06;
+		eps = 0.9;
+		fct = 0;
+		/*setAssignment =&Process::setAssignment;
+		getFlipLiteral =&Process::getFlipLiteral;
+		flip = &Process::flip;*/
+	}
+	else if (maxL <=4){
+		initAssignment = &Process::randomAssignment;
+		cb = 2.85;
+	/*	setAssignment =&Process::setAssignment3;
+		getFlipLiteral =&Process::getFlipLiteral3;
+		flip = &Process::flip3;*/
+	}
+	else if(maxL <=5){
+		initAssignment = &Process::biasAssignment;
+		cb = 3.7;
+	/*	setAssignment =&Process::setAssignment57;
+		getFlipLiteral =&Process::getFlipLiteral57;
+		flip = &Process::flip57;*/
+	}
+	else if(maxL <= 6){
+		initAssignment = &Process::biasAssignment;
+		cb = 5.1;
+		/*setAssignment =&Process::setAssignment57;
+		getFlipLiteral =&Process::getFlipLiteral57;
+		flip = &Process::flip57;*/
+	}
+	else{
+		initAssignment = &Process::biasAssignment;
+		cb = 5.4;
+	/*	setAssignment =&Process::setAssignment57;
+		getFlipLiteral =&Process::getFlipLiteral57;
+		flip = &Process::flip57;*/
+	}
 	switch (fct){
 	case 0:initLookUpTable_poly();
 			lookUp =&Process::LookUpTable_poly;
@@ -117,21 +160,6 @@ Process<T>::Process( const vector<int>& setI,const vector<double>& setD):distrib
 			lookUp =&Process::LookUpTable_exp;
 			break;
 	}
-	initAssignment = &Process::biasAssignment;
-}
-
-/*parse the argument (including options and filename)
- *using getopt_long to allow GNU-style long options as well as single-character options
- */
-template<class T>
-void Process<T>::parseOptions(const vector<int>& setI,const vector<double>& setD){
-	maxSteps = setI[0];
-	fct= setI[1];
-	cct= setI[2];
-	seed = setI[4];
-	cb=setD[0];
-	eps= setD[1];
-	lct = setD[2];
 }
 // construct the Problem with fill information of the input file
 void readFile(const char* fileName){
@@ -236,7 +264,7 @@ void parseLine(string line,int indexC){
 	   }
     }
     int lit;
-    int size;
+    int size = 0;
     int p;
     if(indexC < numC1) p = 1;
     else{
@@ -255,6 +283,7 @@ void parseLine(string line,int indexC){
 		}
 		if(*token == '0'){
 			clauses[indexC] = clauseT;
+			if(size > maxL) maxL = size;
 			clauseT.clear();
 		    return;
 		}

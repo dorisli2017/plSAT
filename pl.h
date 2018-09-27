@@ -49,6 +49,7 @@ vector<int>* clauses;
 vector<int>* posC;
 vector<int>* negC;
 vector<int> clauseT;
+int maxL = 0;
 /*methods*/
 
 void readFile(const char* fileName);
@@ -77,6 +78,7 @@ class Process{
 	double* lookUpTable;
 	int* tabuS;
 	T generator;
+	double noise = 2.0;
 
 	/*settings*/
 	/*option values*/
@@ -90,9 +92,8 @@ class Process{
 	double lct;
 
 public:
-	Process(const vector<int>& setI,const vector<double>& setD);
+	Process();
 	void optimal();
-	void parseOptions(const vector<int>& setI,const vector<double>& setD);
 	void printOptions();
 	double LookUpTable_exp(int literal);
 	double LookUpTable_poly(int literal);
