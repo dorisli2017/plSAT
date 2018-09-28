@@ -68,7 +68,6 @@ void testPart(int partition, bool* assignG);
 
 template<class T>
 class Process{
-	//int flipsN = 0;
 	uniform_int_distribution<int> distribution;
 	int seed;
 	int* numP;

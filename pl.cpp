@@ -881,14 +881,14 @@ void testPart(int partition, bool* assignG){
    	int line = 0;
    	if(partition == 0){
 		while(!fp.eof()){
-			getline(fp,buff);
-			line++;
 			if(line == num){
 				cout<< partition << " tested" << endl;
 				return;
 			}
+			getline(fp,buff);
 			if(buff.empty()) continue;
 			testLine(buff);
+			line++;
 		}
    	}
    	if(partition == 1){
@@ -899,15 +899,17 @@ void testPart(int partition, bool* assignG){
    		}
 	   	line = 0;
 		while(!fp.eof()){
-			getline(fp,buff);
-			line++;
 			if(line == num) {
 				cout<< partition << " tested" << endl;
 				return;
 			}
+			getline(fp,buff);
 			if(buff.empty()) continue;
 			testLine(buff);
+			line++;
 		}
+	   	cout<< num <<" 0 line number "<<  line <<endl;
+	   	assert(false);
    	}
    	if(partition == 2){
    	   	line = 0;
@@ -919,22 +921,22 @@ void testPart(int partition, bool* assignG){
 		}
 	   	line = 0;
 		while(!fp.eof()){
-			getline(fp,buff);
-			line++;
 			if(line == num) {
 				cout<< partition << " tested" << endl;
 				return;
 			}
+			getline(fp,buff);
 			if(buff.empty()){
 				cout<< " "<<line <<"empty line";
 				break;
 			}
 			testLine(buff);
+			line++;
 		}
+	   	cout<<"2 line number "<<  line <<endl;
+	   	assert(false);
 
    	}
-   	cout<<"line number "<<  line <<endl;
-   	assert(false);
 }
 template<class T>
 void Process<T>::test(){
