@@ -801,6 +801,7 @@ template<class T>
 void Process<T>::flip57(int literal,int partition){
 	flipCount++;
     int aIndex = abs(literal);
+    assign[aIndex] = (literal > 0);
     vector<int>& occList =(literal < 0)? posC[aIndex] :negC[aIndex];
     vector<int>& deList =(literal < 0)? negC[aIndex] : posC[aIndex] ;
     int start, end;
@@ -813,7 +814,7 @@ void Process<T>::flip57(int literal,int partition){
     }
 	for (int i = start; i <end; ++i){
 		cla = occList[i];
-		num = numP[occList[i]];
+		num = numP[cla];
 		if(num == 1){
 			breaks[aIndex]--;
 			unsat.push_back(cla);
@@ -834,7 +835,7 @@ void Process<T>::flip57(int literal,int partition){
 	}
 	for (int i = startD; i <endD; ++i){
 		cla = deList[i];
-		num = numP[deList[i]];
+		num = numP[cla];
 		if(num== 0){
 			critVar[cla] = aIndex;
 			breaks[aIndex]++;
@@ -844,9 +845,6 @@ void Process<T>::flip57(int literal,int partition){
 		}
 		numP[cla]++;
 	}
-
-	if(literal > 0)assign[literal] = true;
-	else assign[-literal] = false;
 }
 void testPart(int partition, bool* assignG){
 	int num;
