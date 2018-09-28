@@ -10,7 +10,7 @@
 int main(int argc, char *argv[]){
 	fileName = argv[1];
 	readFile(fileName);
-#pragma omp parallel num_threads(11)
+#pragma omp parallel num_threads(2)
  {
 	switch(omp_get_thread_num()){
 	case 0:{
@@ -481,6 +481,7 @@ void Process<T>::setAssignment57(int partition){
 
 template<class T>
 void Process<T>::solve(){
+	computeBreak = &Process::computeBreakScore;
 	while(true){
 		if(sat) return;
 		if (!sat && unsat.size()== 0){
@@ -525,6 +526,10 @@ void Process<T>::solve(){
 }
 template<class T>
 void Process<T>::solvePart(int index){
+	switch(index){
+	case 0: computeBreak = &Process::computeBreakScore0; break;
+	case 2: computeBreak = &Process::computeBreakScore2; break;
+	}
 	bool& sat = (index == 0)? sat0: sat2;
 	while(true){
 		if(sat) return;
@@ -670,11 +675,6 @@ int Process<T>::getFlipLiteral3(int cIndex, int partition){
 	int j=0,bre,min= numCs+1;
 	double sum=0,randD;
 	int greedyLiteral = 0, randomLiteral;
-	switch(partition){
-	case 0: computeBreak = &Process::computeBreakScore0; break;
-	case 2: computeBreak = &Process::computeBreakScore2; break;
-	case -1:computeBreak = &Process::computeBreakScore; break;
-	}
 	for (std::vector<int>::const_iterator i = vList.begin(); i != vList.end(); ++i){
 		bre = (this->*Process::computeBreak)(*i);
 		if(bre == 0){
@@ -720,11 +720,6 @@ int Process<T>::getFlipLiteral57(int cIndex, int partition){
 	int j=0,bre,min= numCs+1;
 	double sum=0,randD;
 	int greedyLiteral = 0, randomLiteral;
-	switch(partition){
-	case 0: computeBreak = &Process::computeBreakScore0; break;
-	case 2: computeBreak = &Process::computeBreakScore2; break;
-	case -1:computeBreak = &Process::computeBreakScore; break;
-	}
 	for (std::vector<int>::const_iterator i = vList.begin(); i != vList.end(); ++i){
 //		bre = breaks[abs(*i)];
 		bre = (this->*Process::computeBreak)(*i);

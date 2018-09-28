@@ -111,11 +111,6 @@ public:
 	void (Process::*setAssignment)(int partition) = NULL;
 	void setAssignment3(int partition);
 	void setAssignment57(int partition);
-	void printAssignment();
-	void printUnsatCs();
-	void printNumP();
-	void test();
-	void debugAssign();
 	int computeBreakScore(int literal);
 	int computeBreakScore0(int literal);
 	int computeBreakScore2(int literal);
@@ -123,7 +118,11 @@ public:
 	int randI();
 	int randI2();
 	void solvePart(int index);
-	void push(int cIndex);
 	void solve();
+	void printAssignment();
+	void printUnsatCs();
+	void printNumP();
+	void test();
+	void debugAssign();
 };
 #endif /* MAIN_H_ */
