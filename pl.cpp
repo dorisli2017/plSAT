@@ -10,7 +10,7 @@
 int main(int argc, char *argv[]){
 	fileName = argv[1];
 	readFile(fileName);
-#pragma omp parallel num_threads(2)
+#pragma omp parallel num_threads(11)
  {
 	const vector<int> setI =setII[0];
 	const vector<double>& setD = setDD[0];

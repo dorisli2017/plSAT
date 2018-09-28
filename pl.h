@@ -59,8 +59,6 @@ void initialAssignment();
 void printVariables();
 void printClauses();
 void debugProblem();
-int getFlipCandidate_wa(int cIndex);
-int getFlipCandidate_max(int cIndex);
 void printVector(vector<int>& vec);
 void printUsage();
 void testLine(string line);
