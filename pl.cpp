@@ -12,8 +12,6 @@ int main(int argc, char *argv[]){
 	readFile(fileName);
 #pragma omp parallel num_threads(11)
  {
-	const vector<int> setI =setII[0];
-	const vector<double>& setD = setDD[0];
 	switch(omp_get_thread_num()){
 	case 0:{
 		Process<minstd_rand0> process;
@@ -98,6 +96,7 @@ Process<T>::Process():distribution(0, INT_MAX){
 	//set the parameters
 	   // set tabuS
 	clauseQ.reserve(maxL);
+	seed = time(NULL);
 	if(omp_get_thread_num() == 0){
 		srand(seed);
 		randINT = &Process::randI2;
