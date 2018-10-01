@@ -71,9 +71,9 @@ int main(int argc, char *argv[]){
 	}
 }
 }
- testPart(0,assignG);
- testPart(1,assignG);
- testPart(2,assignG);
+ //testPart(0,assignG);
+ //testPart(1,assignG);
+ //testPart(2,assignG);
 }
 void debugProblem(){
 	printVariables();
@@ -721,8 +721,8 @@ int Process<T>::getFlipLiteral57(int cIndex, int partition){
 	double sum=0,randD;
 	int greedyLiteral = 0, randomLiteral;
 	for (std::vector<int>::const_iterator i = vList.begin(); i != vList.end(); ++i){
-//		bre = breaks[abs(*i)];
-		bre = (this->*Process::computeBreak)(*i);
+		bre = breaks[abs(*i)];
+		//bre = (this->*Process::computeBreak)(*i);
 		if(bre == 0){
 			clauseQ.push_back(*i);
 		}
