@@ -612,6 +612,10 @@ void Process<T>::optimal(){
 		}
 		odd = (odd+1)%pa;
 	}
+	#pragma omp critical
+	{
+		testPart();
+	}
 	(this->*setAssignment)(-1);
 	solve();
 }
@@ -786,7 +790,7 @@ void Process<T>::flip57(int literal,int partition){
 	}
 }
 
-void testLine(string line){
+void testLine(string line, bool* assignG){
 	char* str = strdup(line.c_str());
     const char s[2] = " ";
     int lit;
@@ -922,6 +926,35 @@ template<class T>
 int Process<T>::randI2(){
 	return rand();
 };
+template<class T>
+void Process<T>::testPart(){
+	ifstream fp;
+	fp.open(fileName,std::ios::in);
+	if(!fp.is_open()){
+		perror("read file fails");
+		exit(EXIT_FAILURE);
+	}
+	string buff;
+	char head;
+   	getline(fp,buff);
+   	while(!fp.eof()){
+   		if(buff.empty()) break;
+		head =buff.at(0);
+		if(head == 'p'){
+				break;
+		}
+		getline(fp,buff);
+	}
+   	int line = 0;
+   	int num = numC[pa];
+   	while(!fp.eof() && line < num){
+		getline(fp,buff);
+		if(buff.empty()) break;
+		testLine(buff,assign);
+		line++;
+   	}
+   	cout<< omp_get_thread_num() <<" part tested" << endl;
+}
 
 void test(){
 	ifstream fp;
@@ -944,7 +977,7 @@ void test(){
    	while(!fp.eof()){
 		getline(fp,buff);
 		if(buff.empty()) break;
-		testLine(buff);
+		testLine(buff,assignG);
    	}
    	cout<< "tested" << endl;
 }

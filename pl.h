@@ -59,7 +59,7 @@ void debugProblem();
 void printVector(vector<int>& vec);
 void printUsage();
 void printPartition();
-void testLine(string line);
+void testLine(string line, bool* assignG);
 void test();
 
 template<class T>
@@ -120,5 +120,6 @@ public:
 	void printUnsatCs();
 	void printNumP();
 	void debugAssign();
+	void testPart();
 };
 #endif /* MAIN_H_ */
