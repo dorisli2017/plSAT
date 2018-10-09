@@ -28,41 +28,39 @@
 #include <random>
 #include <functional>
 using namespace std;
-bool inter = true;
-bool sat0 = false;
-bool sat2 = false;
+vector<bool> satP;
 bool sat = false;
+int pa;
 bool* assignG;
-//  maxSteps,fct,ict,cct,gen,seed
-const vector<vector<int>> setII= {{INT_MAX,2,100,10,0}, {INT_MAX,2,100,10,0}};
-const vector<vector<double>> setDD = {{3.6, 1.0,0.5},{3.6, 1.0,0.5}};
+
 
 
 /*problem and assignment*/
 char* fileName;
 int numCs;
 int numVs;
-int numV1;
-int numC1;
-int numCc;
+vector<int> numV;// biggiest index of the variable set
+vector<int> numC;
 vector<int>* clauses;
 vector<int>* posC;
 vector<int>* negC;
 vector<int> clauseT;
 int maxL = 0;
+int step;
 /*methods*/
 
 void readFile(const char* fileName);
 void memAllocate(string buff);
-void parseLine(string line, int index);
+void parseLine(string line, int index, int p);
 void initialAssignment();
 void printVariables();
 void printClauses();
 void debugProblem();
 void printVector(vector<int>& vec);
 void printUsage();
+void printPartition();
 void testLine(string line);
-void testPart(int partition, bool* assignG);
+void test();
 
 template<class T>
 class Process{
@@ -96,7 +94,6 @@ public:
 	double LookUpTable_exp(int literal);
 	double LookUpTable_poly(int literal);
 	double (Process::*lookUp)(int)  = NULL;
-	int (Process::*computeBreak)(int) = NULL;
 	void initLookUpTable_exp(void);
 	void initLookUpTable_poly(void);
 	int (Process::*getFlipLiteral)(int cIndex, int partition);
@@ -111,9 +108,9 @@ public:
 	void (Process::*setAssignment)(int partition) = NULL;
 	void setAssignment3(int partition);
 	void setAssignment57(int partition);
-	int computeBreakScore(int literal);
-	int computeBreakScore0(int literal);
-	int computeBreakScore2(int literal);
+	int computeBreakScore(int literal,int partition);
+	int computeBreakScoreP(int literal,int partition);
+	int (Process::*computeBreak)(int,int) = NULL;
 	int (Process::*randINT)(void) = NULL;
 	int randI();
 	int randI2();
@@ -122,7 +119,6 @@ public:
 	void printAssignment();
 	void printUnsatCs();
 	void printNumP();
-	void test();
 	void debugAssign();
 };
 #endif /* MAIN_H_ */

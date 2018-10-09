@@ -9,8 +9,9 @@
 
 int main(int argc, char *argv[]){
 	fileName = argv[1];
+	pa = atoi(argv[2]);
 	readFile(fileName);
-#pragma omp parallel num_threads(2)
+#pragma omp parallel num_threads(pa)
  {
 	switch(omp_get_thread_num()){
 	case 0:{
@@ -71,13 +72,26 @@ int main(int argc, char *argv[]){
 	}
 }
 }
- //testPart(0,assignG);
- //testPart(1,assignG);
- //testPart(2,assignG);
+ test();
 }
 void debugProblem(){
+	printPartition();
 	printVariables();
 	printClauses();
+}
+void printPartition(){
+	cout<< "numVs including 0: "<< numVs<<endl;
+	cout<< "numCs: "<< numCs<<endl;
+	cout<< "numV:"<<endl;
+	for(int i =0; i < pa+1; i++){
+		cout<< numV[i]<<" ";
+	}
+	cout<<endl;
+	cout<< "numC:"<<endl;
+	for(int i = 0; i < pa+2; i++){
+		cout<< numC[i]<<" ";
+	}
+	cout<<endl;
 }
 template<class T>
 void Process<T>::debugAssign(){
@@ -93,8 +107,6 @@ void Process<T>::debugAssign(){
 }
 template<class T>
 Process<T>::Process():distribution(0, INT_MAX){
-	//set the parameters
-	   // set tabuS
 	clauseQ.reserve(maxL);
 	seed = time(NULL);
 	if(omp_get_thread_num() == 0){
@@ -180,103 +192,100 @@ void readFile(const char* fileName){
 	string buff;
 	char head;
    	getline(fp,buff);
-   	// Get the p line
    	while(!fp.eof()){
 		//cout<<buff<<endl;
 		//todo:parseLine
    		if(buff.empty()) continue;
 		head =buff.at(0);
-		if(head == 'p'){
+		if(head == 'c'){
+			break;
+		}
+	  getline(fp,buff);
+	}//for seed
+	  getline(fp,buff);
+   	while(!fp.eof()){
+		//cout<<buff<<endl;
+		//todo:parseLine
+   		if(buff.empty()) continue;
+		head =buff.at(0);
+		if(head == 'c'){
 			memAllocate(buff);
 			break;
 		}
 	  getline(fp,buff);
 	}
-	if(inter){
-		getline(fp,buff);
-		head =buff.at(0);
-		if(head == 'c'){
-		}
-	}// for partition file
+   getline(fp,buff);
    	// Get the clauses
-   	int index = -1;
-   	int line = 0;
-   	while(!fp.eof() && line < numCs){
-   		index++;
-		getline(fp,buff);
-		if(buff.empty()) continue;
-		parseLine(buff, index);
-		line++;
+	int index = 0;
+	int part;
+   	for(int i = 0; i < pa+1; i++){
+   		part = i+1;
+   		while(index < numC[i+1]){
+   			getline(fp,buff);
+   			if(buff.empty()) continue;
+   			parseLine(buff, index,part);
+   			index++;
+   		}
    	}
-   	initialAssignment();
+  	initialAssignment();
 };
 void memAllocate(string buff){
-	parseLine(buff,-1);
+	parseLine(buff,-1,-1);
 	clauses = new vector<int>[numCs];
 	posC= new vector<int>[numVs];
 	negC= new vector<int>[numVs];
 	assignG = (bool*)malloc(sizeof(bool) * numVs);
-	static const int arr[] = {4,0,0,0};
-	for(int i = 0; i < numVs; i++){
-		posC[i]= {4,0,0,0};
-		/*posC[i].push_back(4);
-		posC[i].push_back(0);
-		posC[i].push_back(0);
-		posC[i].push_back(0);*/
+	vector<int> arr={pa+2};
+	satP= vector<bool>(pa,false);
+	for(int i =0; i < pa+1; i++){
+		arr.push_back(0);
 	}
 	for(int i = 0; i < numVs; i++){
-		negC[i]= {4,0,0,0};
-		/*negC[i].push_back(4);
-		negC[i].push_back(0);
-		negC[i].push_back(0);
-		negC[i].push_back(0);*/
+		posC[i]= arr;
+	}
+	for(int i = 0; i < numVs; i++){
+		negC[i]= arr;
 	}
 	clauseT.reserve(numVs);
 }
-void parseLine(string line,int indexC){
+void parseLine(string line,int indexC,int p){
 	char* str = strdup(line.c_str());
     const char s[2] = " ";
-   if(inter){
-	   if( indexC == -1){
-		    strtok(str, s);
-			numVs = atoi(strtok(NULL, s))+1;
-			numV1 = atoi(strtok(NULL, s))+1;
-			numCs = atoi(strtok(NULL, s));
-			numC1 = atoi(strtok(NULL, s));
-			numCc = atoi(strtok(NULL, s));
-			return;
-	/*
-			strtok(str, s);
-			numVs = atoi(strtok(NULL, s))+1;
-			strtok(NULL, s);
-			numV1 = numVs;
-			numCs = atoi(strtok(NULL, s));
-			numC1 = 0;
-			numCc = numCs;
-			return;
-	*/
-	   }
-   }// for partition file;*/
-   else{
-		   if( indexC == -1){
-			strtok(str, s);
-			strtok(NULL, s);
-			numVs = atoi(strtok(NULL, s))+1;
-			numV1 = 0;
-			numCs = atoi(strtok(NULL, s));
-			numC1 = 0;
-			numCc = 0;
-			return;
-	   }
-    }
+    int parti;
+   if( indexC == -1){
+		strtok(str, s);
+		int t = atoi(strtok(NULL, s));
+		step = t/pa;
+		numVs = atoi(strtok(NULL, s))+1;
+		numV.push_back(0);
+		for(int i= 0; i < pa; i++){
+			parti = i+1;
+			numV.push_back(0);
+			for(int j =0 ; j < step ; j++){
+				numV[parti]+= atoi(strtok(NULL, s));
+			}
+		}
+		numV[1]++;
+		for(int i =1; i < pa+1; i++){
+			numV[i] += numV[i-1];
+		}
+		numCs = atoi(strtok(NULL, s));
+		numC.push_back(0);
+		for(int i= 0; i < pa; i++){
+			parti = i+1;
+			numC.push_back(0);
+			for(int j =0 ; j < step ; j++){
+				numC[parti]+= atoi(strtok(NULL, s));
+			}
+		}
+		numC.push_back(numCs);
+		for(int i =1; i < pa+1; i++){
+			numC[i] += numC[i-1];
+		}
+		return;
+   }
     int lit;
     int size = 0;
-    int p;
-    if(indexC < numC1) p = 1;
-    else{
-    	if(indexC < numCc) p = 2;
-    	else p = 3;
-    }
     char* token = strtok(str, s);
     while(token != NULL){
 		if(*token== '-'){
@@ -295,10 +304,11 @@ void parseLine(string line,int indexC){
 		}
 		lit = atoi(token);
 		clauseT.push_back(lit);
-	    posC[lit][p]++;
+	   posC[lit][p]++;
 	    size++;
 		token = strtok(NULL, s);
     }
+    cout<< line << endl;
 	perror("a clause line does not terminates in parseLine");
 	exit(EXIT_FAILURE);
 }
@@ -371,14 +381,12 @@ void Process<T>::printNumP(){
 
 void initialAssignment(){
 	for(int i = 0; i < numVs; i++){
-		posC[i][1] = posC[i][1]+posC[i][0];
-		posC[i][2] =  posC[i][1]+posC[i][2];
-		posC[i][3] = posC[i][2]+posC[i][3];
-		negC[i][1] = negC[i][1]+negC[i][0];
-		negC[i][2] =  negC[i][1]+negC[i][2];
-		negC[i][3] = negC[i][2]+negC[i][3];
-		posC[i].reserve(posC[i][3]);
-		negC[i].reserve(negC[i][3]);
+		for(int j =1; j < pa+2; j++){
+			posC[i][j]+= posC[i][j-1];
+			negC[i][j]+= negC[i][j-1];
+		}
+		posC[i].reserve(posC[i][pa+1]);
+		negC[i].reserve(negC[i][pa+1]);
 	}
 	for(int j = 0; j < numCs; j++){
 		for (std::vector<int>::const_iterator i = clauses[j].begin(); i != clauses[j].end(); ++i){
@@ -390,10 +398,9 @@ void initialAssignment(){
 template<class T>
 void Process<T>::biasAssignment(int partition){
 	int vs,ve, start,end;
-	switch(partition){
-	case 0: vs = 0; ve = numV1; start = 0; end = 1; break;
-	case 1: vs = numV1; ve = numVs; start = 2; end = 3;break;
-	default:vs = 0; ve = numVs; start = 0; end = 3;
+	if(partition== -1){ vs = 0; ve = numVs; start = 0; end = pa+1; }
+	else{
+		vs = numV[partition]; ve = numV[partition+1]; start = partition; end =partition+1 ;
 	}
 	for(int i = vs; i < ve; i++){
 			if((posC[i][end]-posC[i][start]) > (negC[i][end]-negC[i][start])){
@@ -408,10 +415,9 @@ void Process<T>::biasAssignment(int partition){
 template<class T>
 void Process<T>::randomAssignment(int partition){
 	int vs,ve;
-	switch(partition){
-	case 0: vs = 0; ve = numV1; break;
-	case 1: vs = numV1; ve = numVs; break;
-	default:vs = 0; ve = numVs;
+	if(partition== -1){ vs = 0; ve = numVs; }
+	else{
+		vs = numV[partition]; ve = numV[partition+1];
 	}
    	for(int j = vs; j < ve; j++){
    		assign[j] = ((this->*randINT)()%2 ==1);
@@ -423,10 +429,9 @@ template<class T>
 void Process<T>::setAssignment3(int partition){
 	unsat.clear();
 	int cs, ce;
-	switch(partition){
-	case 0:cs = 0; ce = numC1;break;
-	case 2:cs = numCc; ce = numCs;break;
-	default: cs = 0; ce = numCs;
+	if(partition== -1){cs = 0; ce = numCs;}
+	else{
+		cs = numC[partition]; ce = numC[partition+1];
 	}
    	for(int i = cs; i < ce; i++){
    		numP[i] = 0;
@@ -447,15 +452,17 @@ template<class T>
 void Process<T>::setAssignment57(int partition){
 	unsat.clear();
 	int cs, ce, vs, ve;
-	switch(partition){
-	case 0:cs = 0; ce = numC1;vs = 0; ve = numV1;break;
-	case 2:cs = numCc; ce = numCs;vs = numV1; ve = numVs;break;
-	default: cs = 0; ce = numCs;vs = 0; ve = numVs;
+	if(partition== -1){cs = 0; ce = numCs;vs = 0; ve = numVs;}
+	else{
+		cs = numC[partition];
+		ce = numC[partition+1];
+		vs = numV[partition];
+		ve = numV[partition+1];
 	}
    	for(int i = cs; i < ce; i++){
    		numP[i] = 0;
    	}
-	for (int i = vs; i <= ve; i++) {
+	for (int i = vs; i <ve; i++) {
 		breaks[i] = 0;
 	}
 	int critV = 0;
@@ -526,31 +533,20 @@ void Process<T>::solve(){
 }
 template<class T>
 void Process<T>::solvePart(int index){
-	switch(index){
-	case 0: computeBreak = &Process::computeBreakScore0; break;
-	case 2: computeBreak = &Process::computeBreakScore2; break;
-	}
-	bool& sat = (index == 0)? sat0: sat2;
+	computeBreak = &Process::computeBreakScoreP;
+	int start, end;
 	while(true){
-		if(sat) return;
-		if (!sat && unsat.size()== 0){
-			if(index == 0){
+		if(satP[index]) return;
+		if (!satP[index] && unsat.size()== 0){
+				start = numV[index]; end = numV[index+1];
 				#pragma omp critical
 				{
-					for(int i = 0; i < numV1; i++){
+					for(int i = start; i < end; i++){
 						assignG[i] = assign[i];
 					}
 				}
 			}
-			else{
-				#pragma omp critical
-				{
-					for(int i = numV1; i < numVs; i++){
-						assignG[i] = assign[i];
-					}
-				}
-			}
-			sat = true;
+			satP[index] = true;
 			return;
 		}
 		int size = unsat.size();
@@ -560,109 +556,61 @@ void Process<T>::solvePart(int index){
 			unsat[randC]=unsat.back();
 			unsat.pop_back();
 			size--;
-			if(sat) return;
-			if (!sat && size == 0){
-				if(index == 0){
-					#pragma omp critical
-					{
-						for(int i = 0; i < numV1; i++){
-							assignG[i] = assign[i];
-						}
+			if(satP[index]) return;
+			if (!satP[index] && size == 0){
+				start = numV[index]; end = numV[index+1];
+				#pragma omp critical
+				{
+					for(int i = start; i < end; i++){
+						assignG[i] = assign[i];
 					}
 				}
-				else{
-					#pragma omp critical
-					{
-						for(int i = numV1; i < numVs; i++){
-							assignG[i] = assign[i];
-						}
-					}
-				}
-				sat = true;
+				satP[index] = true;
 				return;
 			}
 			randC = (this->*randINT)()%size;
 			flipCindex = unsat[randC];
 		}
-		if(sat) return;
+		if(satP[index]) return;
 		int flipLindex = (this->*getFlipLiteral)(flipCindex,index);
 		unsat[randC]=unsat.back();
 		unsat.pop_back();
-		if(sat) return;
+		if(satP[index]) return;
 		(this->*flip)(flipLindex,index);
 		tabuS[abs(flipLindex)]++;
-	}
 }
 template<class T>
 void Process<T>::optimal(){
-	bool odd = (omp_get_thread_num()%2 == 0);
-	bool& satF = odd? sat0:sat2;
-	bool& satS = odd? sat2:sat0;
-	int First = odd? 0:2;
-	int Second = odd?2:0;
-	if(!satF){
-		(this->*initAssignment)(First);
-		solvePart(First);
-		if(unsat.size() != 0){
-			if(First == 0){
-				for(int i =0; i < numV1; i++){
-					assign[i] = assignG[i];
+	int start, end;
+	bool satF;
+	int odd = omp_get_thread_num();
+	for(int i =0; i < pa; i++){
+		assert(odd< pa);
+		satF = satP[odd];
+		if(!satF){
+			(this->*initAssignment)(odd);
+			solvePart(odd);
+			if(unsat.size() != 0){
+				start = numV[odd]; end = numV[odd+1];
+				#pragma omp critical
+				{
+					for(int i = start; i < end; i++){
+						assign[i] = assignG[i];
+					}
 				}
-			}
-			else{
-				for(int i =numV1; i < numVs; i++){
-					assign[i] = assignG[i];
-				}
-
-			}
-		}
-	}
-	else{
-		if(First == 0){
-			for(int i =0; i < numV1; i++){
-				assign[i] = assignG[i];
 			}
 		}
 		else{
-			for(int i =numV1; i < numVs; i++){
-				assign[i] = assignG[i];
-			}
-
-		}
-
-	}
-	if(!satS){
-		(this->*initAssignment)(Second);
-		solvePart(Second);
-		if(unsat.size() != 0){
-			if(Second == 0){
-				for(int i =0; i < numV1; i++){
+			start = numV[odd]; end = numV[odd+1];
+			#pragma omp critical
+			{
+				for(int i = start; i < end; i++){
 					assign[i] = assignG[i];
 				}
 			}
-			else{
-				for(int i =numV1; i < numVs; i++){
-					assign[i] = assignG[i];
-				}
-
-			}
 
 		}
-
-	}
-	else{
-		if(Second == 0){
-			for(int i =0; i < numV1; i++){
-				assign[i] = assignG[i];
-			}
-		}
-		else{
-			for(int i =numV1; i < numVs; i++){
-				assign[i] = assignG[i];
-			}
-
-		}
-
+		odd = (odd+1)%pa;
 	}
 	(this->*setAssignment)(-1);
 	solve();
@@ -676,7 +624,7 @@ int Process<T>::getFlipLiteral3(int cIndex, int partition){
 	double sum=0,randD;
 	int greedyLiteral = 0, randomLiteral;
 	for (std::vector<int>::const_iterator i = vList.begin(); i != vList.end(); ++i){
-		bre = (this->*Process::computeBreak)(*i);
+		bre = computeBreakScore(*i,partition);
 		if(bre == 0){
 			clauseQ.push_back(*i);
 		}
@@ -722,7 +670,6 @@ int Process<T>::getFlipLiteral57(int cIndex, int partition){
 	int greedyLiteral = 0, randomLiteral;
 	for (std::vector<int>::const_iterator i = vList.begin(); i != vList.end(); ++i){
 		bre = breaks[abs(*i)];
-		//bre = (this->*Process::computeBreak)(*i);
 		if(bre == 0){
 			clauseQ.push_back(*i);
 		}
@@ -774,9 +721,8 @@ void Process<T>::flip3(int literal,int partition){
     int start, end;
     int startD, endD;
     switch(partition){
-    case -1:start = occList[0];end = occList[3]; startD = deList[0];endD = deList[3]; break;
-    case 0:start = occList[0]; end = occList[1];startD = deList[0]; endD = deList[1];break;
-    case 2:start = occList[2]; end = occList[3];startD = deList[2]; endD = deList[3];break;
+    case -1:start = occList[0];end = occList[pa+1]; startD = deList[0];endD = deList[pa+1]; break;
+    default:start = occList[partition]; end = occList[partition+1];startD = deList[partition]; endD = deList[partition+1];break;
     }
 	for (int i = start; i <end; ++i){
 		numP[occList[i]]--;
@@ -802,9 +748,8 @@ void Process<T>::flip57(int literal,int partition){
     int startD, endD;
     int cla; int num;
     switch(partition){
-    case -1:start = occList[0];end = occList[3]; startD = deList[0];endD = deList[3]; break;
-    case 0:start = occList[0]; end = occList[1];startD = deList[0]; endD = deList[1];break;
-    case 2:start = occList[2]; end = occList[3];startD = deList[2]; endD = deList[3];break;
+    case -1:start = occList[0];end = occList[pa+1]; startD = deList[0];endD = deList[pa+1]; break;
+    default:start = occList[partition]; end = occList[partition+1];startD = deList[partition]; endD = deList[partition+1];break;
     }
 	for (int i = start; i <end; ++i){
 		cla = occList[i];
@@ -840,131 +785,7 @@ void Process<T>::flip57(int literal,int partition){
 		numP[cla]++;
 	}
 }
-void testPart(int partition, bool* assignG){
-	int num;
-	switch(partition){
-		case 0:num = numC1;break;
-		case 1:num = numCc-numC1;break;
-		case 2:num = numCs - numCc; break;
-		assert(false);
-	}
-	ifstream fp;
-	fp.open(fileName,std::ios::in);
-	if(!fp.is_open()){
-		perror("read file fails");
-		exit(EXIT_FAILURE);
-	}
-	string buff;
-	char head;
-   	getline(fp,buff);
-   	while(!fp.eof()){
-   		if(buff.empty()) break;
-		head =buff.at(0);
-		if(inter){
-			if(head == 'c'){
-				break;
-			}
-		}
-		else{
-			if(head == 'p'){
-				break;
-			}
-		}
-	  getline(fp,buff);
-	}
-   	int line = 0;
-   	if(partition == 0){
-		while(!fp.eof()){
-			if(line == num){
-				cout<< partition << " tested" << endl;
-				return;
-			}
-			getline(fp,buff);
-			if(buff.empty()) continue;
-			testLine(buff);
-			line++;
-		}
-   	}
-   	if(partition == 1){
-		while(!fp.eof()){
-			if(line == numC1) break;
-			getline(fp,buff);
-			line++;
-   		}
-	   	line = 0;
-		while(!fp.eof()){
-			if(line == num) {
-				cout<< partition << " tested" << endl;
-				return;
-			}
-			getline(fp,buff);
-			if(buff.empty()) continue;
-			testLine(buff);
-			line++;
-		}
-	   	cout<< num <<" 0 line number "<<  line <<endl;
-	   	assert(false);
-   	}
-   	if(partition == 2){
-   	   	line = 0;
-		while(!fp.eof()){
-			if(line == numCc) break;
-			getline(fp,buff);
-			if(buff.empty()) continue;
-			line++;
-		}
-	   	line = 0;
-		while(!fp.eof()){
-			if(line == num) {
-				cout<< partition << " tested" << endl;
-				return;
-			}
-			getline(fp,buff);
-			if(buff.empty()){
-				cout<< " "<<line <<"empty line";
-				break;
-			}
-			testLine(buff);
-			line++;
-		}
-	   	cout<<"2 line number "<<  line <<endl;
-	   	assert(false);
 
-   	}
-}
-template<class T>
-void Process<T>::test(){
-	ifstream fp;
-	fp.open(fileName,std::ios::in);
-	if(!fp.is_open()){
-		perror("read file fails");
-		exit(EXIT_FAILURE);
-	}
-	string buff;
-	char head;
-   	getline(fp,buff);
-   	while(!fp.eof()){
-   		if(buff.empty()) break;
-		head =buff.at(0);
-		if(inter){
-			if(head == 'c'){
-				break;
-			}
-		}
-		else{
-			if(head == 'p'){
-				break;
-			}
-		}
-	  getline(fp,buff);
-	}
-   	while(!fp.eof()){
-		getline(fp,buff);
-		if(buff.empty()) break;
-		testLine(buff);
-   	}
-   	cout<< "tested" << endl;
-}
 void testLine(string line){
 	char* str = strdup(line.c_str());
     const char s[2] = " ";
@@ -995,43 +816,28 @@ void testLine(string line){
 	exit(EXIT_FAILURE);
 
 }
+
 template<class T>
-int Process<T>::computeBreakScore(int literal){
+int Process<T>::computeBreakScoreP(int literal,int partition){
     int score = 0;
     int aIndex = abs(literal);
     vector<int>& occList =(literal < 0)? posC[aIndex] :negC[aIndex];
     int start, end;
-    start = occList[0];end = occList[3];
+    start=occList[partition]; end =  occList[partition+1];
     for(int i = start; i < end; i++) {
         if (numP[occList[i]]== 1) {
             score++;
         }
-    }
-	//cout<< "out make "<<endl;
+    }	//cout<< "out make "<<endl;
     return score;
 }
 template<class T>
-int Process<T>::computeBreakScore0(int literal){
+int Process<T>::computeBreakScore(int literal,int partition){
     int score = 0;
     int aIndex = abs(literal);
     vector<int>& occList =(literal < 0)? posC[aIndex] :negC[aIndex];
     int start, end;
-    start = occList[0]; end = occList[1];
-    for(int i = start; i < end; i++) {
-        if (numP[occList[i]]== 1) {
-            score++;
-        }
-    }
-	//cout<< "out make "<<endl;
-    return score;
-}
-template<class T>
-int Process<T>::computeBreakScore2(int literal){
-    int score = 0;
-    int aIndex = abs(literal);
-    vector<int>& occList =(literal < 0)? posC[aIndex] :negC[aIndex];
-    int start, end;
-    start = occList[2]; end = occList[3];
+    start = occList[0];end = occList[pa+1];
     for(int i = start; i < end; i++) {
         if (numP[occList[i]]== 1) {
             score++;
@@ -1117,4 +923,28 @@ int Process<T>::randI2(){
 	return rand();
 };
 
-
+void test(){
+	ifstream fp;
+	fp.open(fileName,std::ios::in);
+	if(!fp.is_open()){
+		perror("read file fails");
+		exit(EXIT_FAILURE);
+	}
+	string buff;
+	char head;
+   	getline(fp,buff);
+   	while(!fp.eof()){
+   		if(buff.empty()) break;
+		head =buff.at(0);
+		if(head == 'p'){
+				break;
+		}
+		getline(fp,buff);
+	}
+   	while(!fp.eof()){
+		getline(fp,buff);
+		if(buff.empty()) break;
+		testLine(buff);
+   	}
+   	cout<< "tested" << endl;
+}
