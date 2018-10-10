@@ -546,6 +546,8 @@ void Process<T>::solvePart(int index){
 					for(int i = start; i < end; i++){
 						assignG[i] = assign[i];
 					}
+					testPartition(index,assignG);
+					testPartition(index,assign);
 				}
 			}
 			satP[index] = true;
@@ -566,6 +568,8 @@ void Process<T>::solvePart(int index){
 					for(int i = start; i < end; i++){
 						assignG[i] = assign[i];
 					}
+					testPartition(index,assignG);
+					testPartition(index,assign);
 				}
 				satP[index] = true;
 				return;
