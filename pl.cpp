@@ -534,6 +534,7 @@ void Process<T>::solve(){
 }
 template<class T>
 void Process<T>::solvePart(int index){
+	debugSolution(index);
 	computeBreak = &Process::computeBreakScoreP;
 	int start, end;
 	while(true){
@@ -573,12 +574,14 @@ void Process<T>::solvePart(int index){
 			flipCindex = unsat[randC];
 		}
 		if(satP[index]) return;
+		debugSolution(index);
 		int flipLindex = (this->*getFlipLiteral)(flipCindex,index);
 		unsat[randC]=unsat.back();
 		unsat.pop_back();
 		if(satP[index]) return;
 		(this->*flip)(flipLindex,index);
 		tabuS[abs(flipLindex)]++;
+		debugSolution(index);
 }
 template<class T>
 void Process<T>::optimal(){
@@ -590,7 +593,9 @@ void Process<T>::optimal(){
 		satF = satP[odd];
 		if(!satF){
 			(this->*initAssignment)(odd);
+			debugSolution(odd);
 			solvePart(odd);
+
 			if(unsat.size() != 0){
 				start = numV[odd]; end = numV[odd+1];
 				#pragma omp critical
@@ -1029,3 +1034,30 @@ void debugStructure(){
 	}
 	cout<< "structure tested"<<endl;
 };
+template<class T>
+void Process<T>::debugSolution(int partition){
+	int count = 0;
+	int v;
+	int l;
+	for(int i = numC[partition]; i < numC[partition+1];i++){
+		for(int j =0; j < clauses[i].size(); j++){
+			l = clauses[i][j];
+			v = abs(l);
+			if((l >0) && assign[v]) count++;
+			if((l<0) && !assign[v]) count++;
+		}
+		assert(count == numP[i]);
+		if(count == 0){
+			int k = 0;
+			for(; k < unsat.size(); k++){
+				if(unsat[k] == i){
+					break;
+				}
+			}
+			if(k == unsat.size()){
+				assert(false);
+			}
+		}
+		count = 0;
+	}
+}
