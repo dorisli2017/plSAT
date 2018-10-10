@@ -625,7 +625,7 @@ void Process<T>::optimal(){
 			}
 		}
 		else{
-			assert(false);
+			//assert(false);
 			start = numV[odd]; end = numV[odd+1];
 			#pragma omp critical
 			{
