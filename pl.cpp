@@ -641,11 +641,12 @@ void Process<T>::optimal(){
 	{
 		testPart();
 	}
-	(this->*setAssignment)(-1);
+/*	(this->*setAssignment)(-1);
 	for(int i = 0; i < pa+1; i++){
-		solvePart(odd);
+		debugSolution(odd);
 	}
-	//solve();
+	solve();
+*/
 }
 
 template<class T>
