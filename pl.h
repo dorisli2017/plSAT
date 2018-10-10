@@ -62,7 +62,6 @@ void printPartition();
 void testLine(string line, bool* assignG);
 void test();
 void debugStructure();
-void testPartition(int partition,bool* assign);
 
 template<class T>
 class Process{
@@ -122,7 +121,6 @@ public:
 	void printUnsatCs();
 	void printNumP();
 	void debugAssign();
-	void testPart();
 	void debugSolution(int partition);
 };
 #endif /* MAIN_H_ */

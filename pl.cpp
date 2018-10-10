@@ -552,8 +552,6 @@ void Process<T>::solvePart(int index){
 					for(int i = start; i < end; i++){
 						assignG[i] = assign[i];
 					}
-					testPartition(index,assignG);
-					testPartition(index,assign);
 				}
 				satP[index] = true;
 				assert(unsat.size() == 0);
@@ -571,10 +569,6 @@ void Process<T>::solvePart(int index){
 			unsat.pop_back();
 			size--;
 			if(satP[index]){
-#pragma omp critical
-{
-	cout<<omp_get_thread_num()<< "come out 3"<< index<<endl;
-}
 				return;
 			}
 			if (!satP[index] && size == 0){
@@ -585,33 +579,19 @@ void Process<T>::solvePart(int index){
 					for(int i = start; i < end; i++){
 						assignG[i] = assign[i];
 					}
-					testPartition(index,assignG);
-					testPartition(index,assign);
 				}
 				satP[index] = true;
-#pragma omp critical
-{
-cout<<omp_get_thread_num()<< "come out 4 "<< index<<endl;
-}
 				return;
 			}
 			randC = (this->*randINT)()%size;
 			flipCindex = unsat[randC];
 		}
 		if(satP[index]){
-#pragma omp critical
-{
-cout<<omp_get_thread_num()<< "come out 5 "<< index<<endl;
-}
 			return;
 		}
 		debugSolution(index);
 		int flipLindex = (this->*getFlipLiteral)(flipCindex,index);
 		if(satP[index]){
-#pragma omp critical
-{
-	cout<<omp_get_thread_num()<< "come out 6 "<< index<<endl;;
-}
 			return;
 		}
 		unsat[randC]=unsat.back();
@@ -631,20 +611,11 @@ void Process<T>::optimal(){
 		if(!satP[odd]){
 			(this->*initAssignment)(odd);
 			debugSolution(odd);
-			#pragma omp critical
-			{
-				cout<< omp_get_thread_num() << "start solve"<<odd<< endl;
-			}
 			solvePart(odd);
-			#pragma omp critical
-			{
-				cout<< omp_get_thread_num() << "finish solve"<<odd<< endl;
-			}
 			if(unsat.size() != 0){
 				start = numV[odd]; end = numV[odd+1];
 				#pragma omp critical
 				{
-					cout<< omp_get_thread_num() << "get global 1"<<odd<< endl;
 					for(int i = start; i < end; i++){
 						assign[i] = assignG[i];
 					}
@@ -656,27 +627,13 @@ void Process<T>::optimal(){
 			start = numV[odd]; end = numV[odd+1];
 			#pragma omp critical
 			{
-				cout<< omp_get_thread_num() << "get global 2"<<odd<< endl;
 				for(int i = start; i < end; i++){
 					assign[i] = assignG[i];
 				}
 			}
 
 		}
-#pragma omp critical
-{
-	cout<< omp_get_thread_num() << "starts test global "<<odd<< endl;
-		testPartition(odd,assignG);
-	cout<< omp_get_thread_num() << "finished test global "<<odd<< endl;
-		cout<< omp_get_thread_num() << "starts test local "<<odd<< endl;
-		testPartition(odd,assign);
-		cout<< omp_get_thread_num() << "finished test local"<<odd<< endl;
-}
 		odd = (odd+1)%pa;
-	}
-	#pragma omp critical
-	{
-		testPart();
 	}
 	(this->*setAssignment)(-1);
 	for(int i = 0; i < pa+1; i++){
@@ -992,71 +949,10 @@ template<class T>
 int Process<T>::randI2(){
 	return rand();
 };
-template<class T>
-void Process<T>::testPart(){
-	ifstream fp;
-	fp.open(fileName,std::ios::in);
-	if(!fp.is_open()){
-		perror("read file fails");
-		exit(EXIT_FAILURE);
-	}
-	string buff;
-	char head;
-   	getline(fp,buff);
-   	while(!fp.eof()){
-   		if(buff.empty()) break;
-		head =buff.at(0);
-		if(head == 'p'){
-				break;
-		}
-		getline(fp,buff);
-	}
-   	int line = 0;
-   	int num = numC[pa];
-   	while(!fp.eof() && line < num){
-		getline(fp,buff);
-		if(buff.empty()) break;
-		testLine(buff,assign);
-		line++;
-   	}
-   	cout<< omp_get_thread_num() <<" part tested" << endl;
-}
-void testPartition(int partition, bool* assign){
-	ifstream fp;
-	fp.open(fileName,std::ios::in);
-	if(!fp.is_open()){
-		perror("read file fails");
-		exit(EXIT_FAILURE);
-	}
-	string buff;
-	char head;
-   	getline(fp,buff);
-   	while(!fp.eof()){
-   		if(buff.empty()) break;
-		head =buff.at(0);
-		if(head == 'p'){
-				break;
-		}
-		getline(fp,buff);
-	}
-   	int line = 0;
-   	int num = numC[partition];
-   	while(!fp.eof() && line < num){
-		getline(fp,buff);
-		line++;
-   	}
-   	num = numC[partition+1];
-   	while(!fp.eof() && line < num){
-		getline(fp,buff);
-		if(buff.empty()) break;
-		testLine(buff,assign);
-		line++;
-   	}
-   	cout<< omp_get_thread_num() <<" partition tested" << partition<< endl;
-}
-
 
 void test(){
+#pragma omp critical
+{
 	ifstream fp;
 	fp.open(fileName,std::ios::in);
 	if(!fp.is_open()){
@@ -1080,6 +976,7 @@ void test(){
 		testLine(buff,assignG);
    	}
    	cout<< "tested" << endl;
+}
 }
 
 void debugStructure(){
