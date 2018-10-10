@@ -586,16 +586,13 @@ void Process<T>::solvePart(int index){
 template<class T>
 void Process<T>::optimal(){
 	int start, end;
-	bool satF;
 	int odd = omp_get_thread_num();
 	for(int i =0; i < pa; i++){
 		assert(odd< pa);
-		satF = satP[odd];
-		if(!satF){
+		if(!satP[odd]){
 			(this->*initAssignment)(odd);
 			debugSolution(odd);
 			solvePart(odd);
-
 			if(unsat.size() != 0){
 				start = numV[odd]; end = numV[odd+1];
 				#pragma omp critical
