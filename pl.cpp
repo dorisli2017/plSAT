@@ -612,6 +612,7 @@ void Process<T>::optimal(){
 				start = numV[odd]; end = numV[odd+1];
 				#pragma omp critical
 				{
+					cout<< omp_get_thread_num() << "get global 1"<<odd<< endl;
 					for(int i = start; i < end; i++){
 						assign[i] = assignG[i];
 					}
@@ -619,9 +620,11 @@ void Process<T>::optimal(){
 			}
 		}
 		else{
+
 			start = numV[odd]; end = numV[odd+1];
 			#pragma omp critical
 			{
+				cout<< omp_get_thread_num() << "get global 2"<<odd<< endl;
 				for(int i = start; i < end; i++){
 					assign[i] = assignG[i];
 				}
