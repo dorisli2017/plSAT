@@ -12,7 +12,7 @@ int main(int argc, char *argv[]){
 	pa = atoi(argv[2]);
 	readFile(fileName);
 	debugStructure();
-#pragma omp parallel num_threads(1)
+#pragma omp parallel num_threads(pa)
  {
 	switch(omp_get_thread_num()){
 	case 0:{
@@ -73,7 +73,7 @@ int main(int argc, char *argv[]){
 	}
 }
 }
- test();
+// test();
 }
 void debugProblem(){
 	printPartition();
