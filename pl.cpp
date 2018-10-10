@@ -539,10 +539,6 @@ void Process<T>::solvePart(int index){
 	int start, end;
 	while(true){
 		if(satP[index]){
-			#pragma omp critical
-			{
-				cout<<omp_get_thread_num()<< "come out 1"<< index<<endl;
-			}
 			return;
 		}
 		if (!satP[index] && unsat.size()== 0){
@@ -555,10 +551,6 @@ void Process<T>::solvePart(int index){
 				}
 				satP[index] = true;
 				assert(unsat.size() == 0);
-#pragma omp critical
-{
-		cout<<omp_get_thread_num()<< "come out 2"<< index<<endl;
-}
 				return;
 		}
 		int size = unsat.size();
