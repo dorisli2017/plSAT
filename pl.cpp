@@ -606,7 +606,7 @@ template<class T>
 void Process<T>::optimal(){
 	int start, end;
 	int odd = omp_get_thread_num();
-	assert(odd == 0);
+	//assert(odd == 0);
 	for(int i =0; i < pa; i++){
 		assert(odd< pa);
 		if(!satP[odd]){
