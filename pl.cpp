@@ -616,7 +616,11 @@ void Process<T>::optimal(){
 			}
 
 		}
-		testPartition(odd);
+#pragma omp critical
+{
+		testPartition(odd,assignG);
+		testPartition(odd,assign);
+}
 		odd = (odd+1)%pa;
 	}
 	#pragma omp critical
@@ -962,8 +966,7 @@ void Process<T>::testPart(){
    	}
    	cout<< omp_get_thread_num() <<" part tested" << endl;
 }
-template<class T>
-void Process<T>::testPartition(int partition){
+void testPartition(int partition, bool* assign){
 	ifstream fp;
 	fp.open(fileName,std::ios::in);
 	if(!fp.is_open()){
