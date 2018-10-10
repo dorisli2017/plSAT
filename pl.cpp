@@ -73,7 +73,7 @@ int main(int argc, char *argv[]){
 	}
 }
 }
-//test();
+test();
 }
 void debugProblem(){
 	printPartition();
@@ -678,12 +678,12 @@ void Process<T>::optimal(){
 	{
 		testPart();
 	}
-/*	(this->*setAssignment)(-1);
+	(this->*setAssignment)(-1);
 	for(int i = 0; i < pa+1; i++){
 		debugSolution(odd);
 	}
 	solve();
-*/
+
 }
 
 template<class T>
