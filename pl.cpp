@@ -552,9 +552,9 @@ void Process<T>::solvePart(int index){
 					testPartition(index,assignG);
 					testPartition(index,assign);
 				}
-			}
-			satP[index] = true;
-			return;
+				satP[index] = true;
+				assert(unsat.size() == 0);
+				return;
 		}
 		int size = unsat.size();
 		int randC = (this->*randINT)()%size;
@@ -599,6 +599,8 @@ void Process<T>::solvePart(int index){
 		(this->*flip)(flipLindex,index);
 		tabuS[abs(flipLindex)]++;
 		debugSolution(index);
+	}
+
 }
 template<class T>
 void Process<T>::optimal(){
