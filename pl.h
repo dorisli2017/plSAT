@@ -60,7 +60,6 @@ void printVector(vector<int>& vec);
 void printUsage();
 void printPartition();
 void testLine(string line, bool* assignG);
-void test();
 void debugStructure();
 
 template<class T>
@@ -122,5 +121,6 @@ public:
 	void printNumP();
 	void debugAssign();
 	void debugSolution(int partition);
+	void test();
 };
 #endif /* MAIN_H_ */

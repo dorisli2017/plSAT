@@ -73,7 +73,6 @@ int main(int argc, char *argv[]){
 	}
 }
 }
-test();
 }
 void debugProblem(){
 	printPartition();
@@ -493,12 +492,7 @@ void Process<T>::solve(){
 	while(true){
 		if(sat) return;
 		if (!sat && unsat.size()== 0){
-			#pragma omp critical
-			{
-			for(int i = 0; i < numVs; i++){
-						assignG[i] = assign[i];
-			}
-			}
+			test();
 			sat = true;
 			return;
 		}
@@ -511,12 +505,7 @@ void Process<T>::solve(){
 			size--;
 			if(sat) return;
 			if (!sat && size == 0){
-				#pragma omp critical
-				{
-					for(int i = 0; i < numVs; i++){
-						assignG[i] = assign[i];
-					}
-				}
+				test();
 				sat = true;
 				return;
 				}
@@ -543,11 +532,8 @@ void Process<T>::solvePart(int index){
 		}
 		if (!satP[index] && unsat.size()== 0){
 				start = numV[index]; end = numV[index+1];
-				#pragma omp critical
-				{
-					for(int i = start; i < end; i++){
-						assignG[i] = assign[i];
-					}
+				for(int i = start; i < end; i++){
+					assignG[i] = assign[i];
 				}
 				satP[index] = true;
 				assert(unsat.size() == 0);
@@ -566,11 +552,8 @@ void Process<T>::solvePart(int index){
 			if (!satP[index] && size == 0){
 				assert( unsat.size() == 0);
 				start = numV[index]; end = numV[index+1];
-				#pragma omp critical
-				{
-					for(int i = start; i < end; i++){
-						assignG[i] = assign[i];
-					}
+				for(int i = start; i < end; i++){
+					assignG[i] = assign[i];
 				}
 				satP[index] = true;
 				return;
@@ -606,22 +589,16 @@ void Process<T>::optimal(){
 			solvePart(odd);
 			if(unsat.size() != 0){
 				start = numV[odd]; end = numV[odd+1];
-				#pragma omp critical
-				{
-					for(int i = start; i < end; i++){
-						assign[i] = assignG[i];
-					}
+				for(int i = start; i < end; i++){
+					assign[i] = assignG[i];
 				}
 			}
 		}
 		else{
 
 			start = numV[odd]; end = numV[odd+1];
-			#pragma omp critical
-			{
-				for(int i = start; i < end; i++){
-					assign[i] = assignG[i];
-				}
+			for(int i = start; i < end; i++){
+				assign[i] = assignG[i];
 			}
 
 		}
@@ -942,7 +919,8 @@ int Process<T>::randI2(){
 	return rand();
 };
 
-void test(){
+template<class T>
+void Process<T>::test(){
 #pragma omp critical
 {
 	ifstream fp;
@@ -965,7 +943,7 @@ void test(){
    	while(!fp.eof()){
 		getline(fp,buff);
 		if(buff.empty()) break;
-		testLine(buff,assignG);
+		testLine(buff,assign);
    	}
    	cout<< "tested" << endl;
 }
