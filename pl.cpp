@@ -539,6 +539,10 @@ void Process<T>::solvePart(int index){
 	int start, end;
 	while(true){
 		if(satP[index]){
+			#pragma omp critical
+			{
+				cout<< "come out 1"<<endl;
+			}
 			return;
 		}
 		if (!satP[index] && unsat.size()== 0){
@@ -553,6 +557,10 @@ void Process<T>::solvePart(int index){
 				}
 				satP[index] = true;
 				assert(unsat.size() == 0);
+#pragma omp critical
+{
+	cout<< "come out 2"<<endl;
+}
 				return;
 		}
 		int size = unsat.size();
@@ -563,6 +571,10 @@ void Process<T>::solvePart(int index){
 			unsat.pop_back();
 			size--;
 			if(satP[index]){
+#pragma omp critical
+{
+	cout<< "come out 3"<<endl;
+}
 				return;
 			}
 			if (!satP[index] && size == 0){
@@ -577,12 +589,20 @@ void Process<T>::solvePart(int index){
 					testPartition(index,assign);
 				}
 				satP[index] = true;
+#pragma omp critical
+{
+	cout<< "come out 4"<<endl;
+}
 				return;
 			}
 			randC = (this->*randINT)()%size;
 			flipCindex = unsat[randC];
 		}
 		if(satP[index]){
+#pragma omp critical
+{
+	cout<< "come out 5"<<endl;
+}
 			return;
 		}
 		debugSolution(index);
@@ -590,6 +610,10 @@ void Process<T>::solvePart(int index){
 		unsat[randC]=unsat.back();
 		unsat.pop_back();
 		if(satP[index]){
+#pragma omp critical
+{
+	cout<< "come out 6"<<endl;
+}
 			return;
 		}
 		(this->*flip)(flipLindex,index);
