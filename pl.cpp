@@ -12,7 +12,7 @@ int main(int argc, char *argv[]){
 	pa = atoi(argv[2]);
 	readFile(fileName);
 	debugStructure();
-#pragma omp parallel num_threads(pa)
+#pragma omp parallel num_threads(1)
  {
 	switch(omp_get_thread_num()){
 	case 0:{
@@ -591,13 +591,15 @@ template<class T>
 void Process<T>::optimal(){
 	int start, end;
 	int odd = omp_get_thread_num();
-	for(int i =0; i < pa; i++){
+	assert(odd == 0);
+	for(int i =0; i < 1; i++){
 		assert(odd< pa);
 		if(!satP[odd]){
 			(this->*initAssignment)(odd);
 			debugSolution(odd);
 			solvePart(odd);
 			if(unsat.size() != 0){
+				assert(false);
 				start = numV[odd]; end = numV[odd+1];
 				#pragma omp critical
 				{
@@ -608,6 +610,7 @@ void Process<T>::optimal(){
 			}
 		}
 		else{
+			assert(false);
 			start = numV[odd]; end = numV[odd+1];
 			#pragma omp critical
 			{
@@ -628,10 +631,10 @@ void Process<T>::optimal(){
 	}
 	#pragma omp critical
 	{
-		testPart();
+	//	testPart();
 	}
-	(this->*setAssignment)(-1);
-	solve();
+//	(this->*setAssignment)(-1);
+//	solve();
 }
 
 template<class T>
@@ -1102,5 +1105,5 @@ void Process<T>::debugSolution(int partition){
 		}
 		count = 0;
 	}
-	cout<< "Solution in "<< partition<<"tested"<<endl;
+	//cout<< "Solution in "<< partition<<"tested"<<endl;
 }
