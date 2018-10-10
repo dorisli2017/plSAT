@@ -11,7 +11,6 @@ int main(int argc, char *argv[]){
 	fileName = argv[1];
 	pa = atoi(argv[2]);
 	readFile(fileName);
-	debugStructure();
 #pragma omp parallel num_threads(pa)
  {
 	switch(omp_get_thread_num()){
@@ -523,7 +522,6 @@ void Process<T>::solve(){
 }
 template<class T>
 void Process<T>::solvePart(int index){
-	debugSolution(index);
 	computeBreak = &Process::computeBreakScoreP;
 	int start, end;
 	while(true){
@@ -564,7 +562,6 @@ void Process<T>::solvePart(int index){
 		if(satP[index]){
 			return;
 		}
-		debugSolution(index);
 		int flipLindex = (this->*getFlipLiteral)(flipCindex,index);
 		if(satP[index]){
 			return;
@@ -573,7 +570,6 @@ void Process<T>::solvePart(int index){
 		unsat.pop_back();
 		(this->*flip)(flipLindex,index);
 		tabuS[abs(flipLindex)]++;
-		debugSolution(index);
 	}
 
 }
@@ -585,7 +581,6 @@ void Process<T>::optimal(){
 		assert(odd< pa);
 		if(!satP[odd]){
 			(this->*initAssignment)(odd);
-			debugSolution(odd);
 			solvePart(odd);
 			if(unsat.size() != 0){
 				start = numV[odd]; end = numV[odd+1];
@@ -605,9 +600,6 @@ void Process<T>::optimal(){
 		odd = (odd+1)%pa;
 	}
 	(this->*setAssignment)(-1);
-	for(int i = 0; i < pa+1; i++){
-		debugSolution(odd);
-	}
 	solve();
 
 }
