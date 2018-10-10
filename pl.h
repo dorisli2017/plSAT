@@ -61,6 +61,7 @@ void printUsage();
 void printPartition();
 void testLine(string line, bool* assignG);
 void test();
+void debugStructure();
 
 template<class T>
 class Process{

@@ -11,6 +11,7 @@ int main(int argc, char *argv[]){
 	fileName = argv[1];
 	pa = atoi(argv[2]);
 	readFile(fileName);
+	debugStructure();
 #pragma omp parallel num_threads(pa)
  {
 	switch(omp_get_thread_num()){
@@ -981,3 +982,50 @@ void test(){
    	}
    	cout<< "tested" << endl;
 }
+
+void debugStructure(){
+	//numV
+	assert(numV.size() == pa+1);
+	assert(numV[0] == 0);
+	assert(numV[pa] == numVs);
+	//numC
+	assert(numC.size() == pa+2);
+	assert(numC[0] == 0);
+	assert(numC[pa+1] == numCs);
+	for(int i =0; i < pa; i++){
+		for(int j =numC[i]; j < numC[i+1]; j++){
+			for(int k =0; k <clauses[j].size(); k++){
+				/*cout<< "j: "<< j<<endl;
+				cout<< "clauses J:"<<endl;
+				printVector(clauses[j]);
+				cout<< "k: "<< k<<endl;
+				cout<< "i: "<< i<<endl;
+				*/
+				assert(abs(clauses[j][k])>= numV[i]);
+				assert(abs(clauses[j][k])< numV[i+1]);
+			}
+		}
+	}
+	//posC and negC
+	for(int i =0; i < numVs; i++){
+		assert(posC[i][0] == pa+2);
+		assert(negC[i][0] == pa+2);
+		assert(posC[i][pa+1]== posC[i].size());
+		assert(negC[i][pa+1]== negC[i].size());
+		for(int j = 0; j < pa+1; j++){
+			for(int k = posC[i][j]; k <posC[i][j+1]; k++){
+				assert(posC[i][k]>=numC[j]);
+				assert(posC[i][k]<numC[j+1]);
+
+			}
+		}
+		for(int j = 0; j < pa+1; j++){
+			for(int k = negC[i][j]; k <negC[i][j+1]; k++){
+				assert(negC[i][k]>=numC[j]);
+				assert(negC[i][k]<numC[j+1]);
+
+			}
+		}
+	}
+	cout<< "structure tested"<<endl;
+};
