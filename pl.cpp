@@ -73,7 +73,7 @@ int main(int argc, char *argv[]){
 	}
 }
 }
-test();
+//test();
 }
 void debugProblem(){
 	printPartition();
@@ -511,13 +511,13 @@ void Process<T>::solve(){
 			size--;
 			if(sat) return;
 			if (!sat && size == 0){
-				sat = true;
 				#pragma omp critical
 				{
 					for(int i = 0; i < numVs; i++){
 						assignG[i] = assign[i];
 					}
 				}
+				sat = true;
 				return;
 				}
 			randC = (this->*randINT)()%size;
@@ -642,7 +642,10 @@ void Process<T>::optimal(){
 		testPart();
 	}
 	(this->*setAssignment)(-1);
-	solve();
+	for(int i = 0; i < pa+1; i++){
+		solvePart(odd);
+	}
+	//solve();
 }
 
 template<class T>
