@@ -12,7 +12,7 @@ int main(int argc, char *argv[]){
 	pa = atoi(argv[2]);
 	readFile(fileName);
 	debugStructure();
-#pragma omp parallel num_threads(1)
+#pragma omp parallel num_threads(pa)
  {
 	switch(omp_get_thread_num()){
 	case 0:{
@@ -607,7 +607,7 @@ void Process<T>::optimal(){
 	int start, end;
 	int odd = omp_get_thread_num();
 	assert(odd == 0);
-	for(int i =0; i < 1; i++){
+	for(int i =0; i < pa; i++){
 		assert(odd< pa);
 		if(!satP[odd]){
 			(this->*initAssignment)(odd);
