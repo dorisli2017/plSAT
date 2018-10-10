@@ -639,7 +639,7 @@ void Process<T>::optimal(){
 	}
 	#pragma omp critical
 	{
-		testPart();
+	//	testPart();
 	}
 /*	(this->*setAssignment)(-1);
 	for(int i = 0; i < pa+1; i++){
