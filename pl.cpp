@@ -607,8 +607,6 @@ cout<<omp_get_thread_num()<< "come out 5 "<< index<<endl;
 		}
 		debugSolution(index);
 		int flipLindex = (this->*getFlipLiteral)(flipCindex,index);
-		unsat[randC]=unsat.back();
-		unsat.pop_back();
 		if(satP[index]){
 #pragma omp critical
 {
@@ -616,6 +614,8 @@ cout<<omp_get_thread_num()<< "come out 5 "<< index<<endl;
 }
 			return;
 		}
+		unsat[randC]=unsat.back();
+		unsat.pop_back();
 		(this->*flip)(flipLindex,index);
 		tabuS[abs(flipLindex)]++;
 		debugSolution(index);
