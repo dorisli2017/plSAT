@@ -609,7 +609,6 @@ void Process<T>::optimal(){
 			debugSolution(odd);
 			solvePart(odd);
 			if(unsat.size() != 0){
-				assert(false);
 				start = numV[odd]; end = numV[odd+1];
 				#pragma omp critical
 				{
