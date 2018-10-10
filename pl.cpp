@@ -1060,4 +1060,5 @@ void Process<T>::debugSolution(int partition){
 		}
 		count = 0;
 	}
+	cout<< "partition "<< partition<<"tested"<<endl;
 }
