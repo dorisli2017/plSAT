@@ -541,7 +541,7 @@ void Process<T>::solvePart(int index){
 		if(satP[index]){
 			#pragma omp critical
 			{
-				cout<< "come out 1"<<endl;
+				cout<<omp_get_thread_num()<< "come out 1"<< index<<endl;
 			}
 			return;
 		}
@@ -559,7 +559,7 @@ void Process<T>::solvePart(int index){
 				assert(unsat.size() == 0);
 #pragma omp critical
 {
-	cout<< "come out 2"<<endl;
+		cout<<omp_get_thread_num()<< "come out 2"<< index<<endl;
 }
 				return;
 		}
@@ -573,7 +573,7 @@ void Process<T>::solvePart(int index){
 			if(satP[index]){
 #pragma omp critical
 {
-	cout<< "come out 3"<<endl;
+	cout<<omp_get_thread_num()<< "come out 3"<< index<<endl;
 }
 				return;
 			}
@@ -591,7 +591,7 @@ void Process<T>::solvePart(int index){
 				satP[index] = true;
 #pragma omp critical
 {
-	cout<< "come out 4"<<endl;
+cout<<omp_get_thread_num()<< "come out 4 "<< index<<endl;
 }
 				return;
 			}
@@ -601,7 +601,7 @@ void Process<T>::solvePart(int index){
 		if(satP[index]){
 #pragma omp critical
 {
-	cout<< "come out 5"<<endl;
+cout<<omp_get_thread_num()<< "come out 5 "<< index<<endl;
 }
 			return;
 		}
@@ -612,7 +612,7 @@ void Process<T>::solvePart(int index){
 		if(satP[index]){
 #pragma omp critical
 {
-	cout<< "come out 6"<<endl;
+	cout<<omp_get_thread_num()<< "come out 6 "<< index<<endl;;
 }
 			return;
 		}
