@@ -538,7 +538,10 @@ void Process<T>::solvePart(int index){
 	computeBreak = &Process::computeBreakScoreP;
 	int start, end;
 	while(true){
-		if(satP[index]) return;
+		if(satP[index]){
+			assert(false);
+			return;
+		}
 		if (!satP[index] && unsat.size()== 0){
 				start = numV[index]; end = numV[index+1];
 				#pragma omp critical
@@ -560,8 +563,12 @@ void Process<T>::solvePart(int index){
 			unsat[randC]=unsat.back();
 			unsat.pop_back();
 			size--;
-			if(satP[index]) return;
+			if(satP[index]){
+				assert(false);
+				return;
+			}
 			if (!satP[index] && size == 0){
+				assert( unsat.size() == 0);
 				start = numV[index]; end = numV[index+1];
 				#pragma omp critical
 				{
@@ -577,12 +584,18 @@ void Process<T>::solvePart(int index){
 			randC = (this->*randINT)()%size;
 			flipCindex = unsat[randC];
 		}
-		if(satP[index]) return;
+		if(satP[index]){
+			assert(false);
+			return;
+		}
 		debugSolution(index);
 		int flipLindex = (this->*getFlipLiteral)(flipCindex,index);
 		unsat[randC]=unsat.back();
 		unsat.pop_back();
-		if(satP[index]) return;
+		if(satP[index]){
+			assert(false);
+			return;
+		}
 		(this->*flip)(flipLindex,index);
 		tabuS[abs(flipLindex)]++;
 		debugSolution(index);
