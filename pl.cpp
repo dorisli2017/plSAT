@@ -616,6 +616,7 @@ void Process<T>::optimal(){
 			}
 
 		}
+		testPartition(odd);
 		odd = (odd+1)%pa;
 	}
 	#pragma omp critical
@@ -961,6 +962,41 @@ void Process<T>::testPart(){
    	}
    	cout<< omp_get_thread_num() <<" part tested" << endl;
 }
+template<class T>
+void Process<T>::testPartition(int partition){
+	ifstream fp;
+	fp.open(fileName,std::ios::in);
+	if(!fp.is_open()){
+		perror("read file fails");
+		exit(EXIT_FAILURE);
+	}
+	string buff;
+	char head;
+   	getline(fp,buff);
+   	while(!fp.eof()){
+   		if(buff.empty()) break;
+		head =buff.at(0);
+		if(head == 'p'){
+				break;
+		}
+		getline(fp,buff);
+	}
+   	int line = 0;
+   	int num = numC[partition];
+   	while(!fp.eof() && line < num){
+		getline(fp,buff);
+		line++;
+   	}
+   	num = numC[partition+1];
+   	while(!fp.eof() && line < num){
+		getline(fp,buff);
+		if(buff.empty()) break;
+		testLine(buff,assign);
+		line++;
+   	}
+   	cout<< omp_get_thread_num() <<" partition tested" << partition<< endl;
+}
+
 
 void test(){
 	ifstream fp;

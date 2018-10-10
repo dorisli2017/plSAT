@@ -123,5 +123,6 @@ public:
 	void debugAssign();
 	void testPart();
 	void debugSolution(int partition);
+	void testPartition(int partition);
 };
 #endif /* MAIN_H_ */
