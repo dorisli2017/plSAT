@@ -607,7 +607,15 @@ void Process<T>::optimal(){
 		if(!satP[odd]){
 			(this->*initAssignment)(odd);
 			debugSolution(odd);
+			#pragma omp critical
+			{
+				cout<< omp_get_thread_num() << "start solve"<<odd<< endl;
+			}
 			solvePart(odd);
+			#pragma omp critical
+			{
+				cout<< omp_get_thread_num() << "finish solve"<<odd<< endl;
+			}
 			if(unsat.size() != 0){
 				start = numV[odd]; end = numV[odd+1];
 				#pragma omp critical
