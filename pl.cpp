@@ -618,8 +618,10 @@ void Process<T>::optimal(){
 		}
 #pragma omp critical
 {
+	cout<< omp_get_thread_num() << "starts test "<<odd<< endl;
 		testPartition(odd,assignG);
 		testPartition(odd,assign);
+		cout<< omp_get_thread_num() << "finished test "<<odd<< endl;
 }
 		odd = (odd+1)%pa;
 	}
