@@ -539,7 +539,6 @@ void Process<T>::solvePart(int index){
 	int start, end;
 	while(true){
 		if(satP[index]){
-			assert(false);
 			return;
 		}
 		if (!satP[index] && unsat.size()== 0){
@@ -564,7 +563,6 @@ void Process<T>::solvePart(int index){
 			unsat.pop_back();
 			size--;
 			if(satP[index]){
-				assert(false);
 				return;
 			}
 			if (!satP[index] && size == 0){
@@ -585,7 +583,6 @@ void Process<T>::solvePart(int index){
 			flipCindex = unsat[randC];
 		}
 		if(satP[index]){
-			assert(false);
 			return;
 		}
 		debugSolution(index);
@@ -593,7 +590,6 @@ void Process<T>::solvePart(int index){
 		unsat[randC]=unsat.back();
 		unsat.pop_back();
 		if(satP[index]){
-			assert(false);
 			return;
 		}
 		(this->*flip)(flipLindex,index);
@@ -606,7 +602,6 @@ template<class T>
 void Process<T>::optimal(){
 	int start, end;
 	int odd = omp_get_thread_num();
-	//assert(odd == 0);
 	for(int i =0; i < pa; i++){
 		assert(odd< pa);
 		if(!satP[odd]){
@@ -625,7 +620,6 @@ void Process<T>::optimal(){
 			}
 		}
 		else{
-			//assert(false);
 			start = numV[odd]; end = numV[odd+1];
 			#pragma omp critical
 			{
