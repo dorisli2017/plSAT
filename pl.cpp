@@ -516,7 +516,6 @@ void Process<T>::solvePart(int index){
 				for(int i = start; i < end; i++){
 					assignG[i] = assign[i];
 				}
-				assert(unsat.size() == 0);
 				return;
 		}
 		int size = unsat.size();
@@ -548,6 +547,7 @@ template<class T>
 void Process<T>::optimal(){
 	int start, end;
 	int odd = omp_get_thread_num();
+	(this->*initAssignment)(odd);
 	solvePart(odd);
 	tol++;
 	#pragma omp barrier
