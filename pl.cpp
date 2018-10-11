@@ -197,17 +197,6 @@ void readFile(const char* fileName){
    		if(buff.empty()) continue;
 		head =buff.at(0);
 		if(head == 'c'){
-			break;
-		}
-	  getline(fp,buff);
-	}//for seed
-	  getline(fp,buff);
-   	while(!fp.eof()){
-		//cout<<buff<<endl;
-		//todo:parseLine
-   		if(buff.empty()) continue;
-		head =buff.at(0);
-		if(head == 'c'){
 			memAllocate(buff);
 			break;
 		}
@@ -235,7 +224,6 @@ void memAllocate(string buff){
 	negC= new vector<int>[numVs];
 	assignG = (bool*)malloc(sizeof(bool) * numVs);
 	vector<int> arr={pa+2};
-	satP= vector<bool>(pa,false);
 	for(int i =0; i < pa+1; i++){
 		arr.push_back(0);
 	}
@@ -525,15 +513,11 @@ void Process<T>::solvePart(int index){
 	computeBreak = &Process::computeBreakScoreP;
 	int start, end;
 	while(true){
-		if(satP[index]){
-			return;
-		}
-		if (!satP[index] && unsat.size()== 0){
+		if (unsat.size()<= tol){
 				start = numV[index]; end = numV[index+1];
 				for(int i = start; i < end; i++){
 					assignG[i] = assign[i];
 				}
-				satP[index] = true;
 				assert(unsat.size() == 0);
 				return;
 		}
@@ -544,28 +528,17 @@ void Process<T>::solvePart(int index){
 			unsat[randC]=unsat.back();
 			unsat.pop_back();
 			size--;
-			if(satP[index]){
-				return;
-			}
-			if (!satP[index] && size == 0){
-				assert( unsat.size() == 0);
+			if (size <= tol){
 				start = numV[index]; end = numV[index+1];
 				for(int i = start; i < end; i++){
 					assignG[i] = assign[i];
 				}
-				satP[index] = true;
 				return;
 			}
 			randC = (this->*randINT)()%size;
 			flipCindex = unsat[randC];
 		}
-		if(satP[index]){
-			return;
-		}
 		int flipLindex = (this->*getFlipLiteral)(flipCindex,index);
-		if(satP[index]){
-			return;
-		}
 		unsat[randC]=unsat.back();
 		unsat.pop_back();
 		(this->*flip)(flipLindex,index);
@@ -577,31 +550,14 @@ template<class T>
 void Process<T>::optimal(){
 	int start, end;
 	int odd = omp_get_thread_num();
-	for(int i =0; i < pa; i++){
-		assert(odd< pa);
-		if(!satP[odd]){
-			(this->*initAssignment)(odd);
-			solvePart(odd);
-			if(unsat.size() != 0){
-				start = numV[odd]; end = numV[odd+1];
-				for(int i = start; i < end; i++){
-					assign[i] = assignG[i];
-				}
-			}
-		}
-		else{
-
-			start = numV[odd]; end = numV[odd+1];
-			for(int i = start; i < end; i++){
-				assign[i] = assignG[i];
-			}
-
-		}
-		odd = (odd+1)%pa;
+	solvePart(odd);
+	tol++;
+	#pragma omp barrier
+	for(int i = 0; i < numVs; i++){
+		assign[i] = assignG[i];
 	}
 	(this->*setAssignment)(-1);
 	solve();
-
 }
 
 template<class T>

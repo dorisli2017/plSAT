@@ -28,10 +28,10 @@
 #include <random>
 #include <functional>
 using namespace std;
-vector<bool> satP;
 bool sat = false;
 int pa;
 bool* assignG;
+int tol = 0;
 
 
 
