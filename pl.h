@@ -28,7 +28,6 @@
 #include <random>
 #include <functional>
 using namespace std;
-bool sat = false;
 int pa;
 bool* assignG;
 int tol = 0;

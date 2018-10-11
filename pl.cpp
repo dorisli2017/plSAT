@@ -477,11 +477,10 @@ template<class T>
 void Process<T>::solve(){
 	computeBreak = &Process::computeBreakScore;
 	while(true){
-		if(sat) return;
-		if (!sat && unsat.size()== 0){
-			test();
-			sat = true;
-			return;
+		if (unsat.size()== 0){
+			cout<< "SATIS"<<endl;
+			//test();
+			abort();
 		}
 		int size = unsat.size();
 		int randC = (this->*randINT)()%size;
@@ -490,20 +489,17 @@ void Process<T>::solve(){
 			unsat[randC]=unsat.back();
 			unsat.pop_back();
 			size--;
-			if(sat) return;
-			if (!sat && size == 0){
-				test();
-				sat = true;
-				return;
+			if (size == 0){
+				cout<< "SATIS"<<endl;
+				//test();
+				abort();
 				}
 			randC = (this->*randINT)()%size;
 			flipCindex = unsat[randC];
 		}
-		if(sat) return;
 		int flipLindex = (this->*getFlipLiteral)(flipCindex,-1);
 		unsat[randC]=unsat.back();
 		unsat.pop_back();
-		if(sat) return;
 		(this->*flip)(flipLindex,-1);
 		tabuS[abs(flipLindex)]++;
 	}
