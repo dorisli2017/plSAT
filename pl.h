@@ -30,7 +30,7 @@
 using namespace std;
 int pa;
 bool* assignG;
-int tol = 0;
+double tol = 0;
 
 
 

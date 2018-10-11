@@ -508,8 +508,10 @@ template<class T>
 void Process<T>::solvePart(int index){
 	computeBreak = &Process::computeBreakScoreP;
 	int start, end;
+	double tolerence;
 	while(true){
-		if (unsat.size()<= tol){
+		tolerence = tol * unsat.size();
+		if (unsat.size()<= tolerence){
 				start = numV[index]; end = numV[index+1];
 				for(int i = start; i < end; i++){
 					assignG[i] = assign[i];
@@ -524,7 +526,7 @@ void Process<T>::solvePart(int index){
 			unsat[randC]=unsat.back();
 			unsat.pop_back();
 			size--;
-			if (size <= tol){
+			if (size <=tolerence){
 				start = numV[index]; end = numV[index+1];
 				for(int i = start; i < end; i++){
 					assignG[i] = assign[i];
