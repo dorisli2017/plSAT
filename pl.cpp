@@ -981,15 +981,15 @@ void Process<T>::debugCache(){
 	int cs, ce, vs, ve;
 	int vT,score,lt;
 	for(int i= 1; i <numVs; i++){
+	    if(assign[i]) lt = -vT;
+	    else lt = vT;
 		score = 0;
-	    vector<int>& occList = assign[i]? posC[i] :negC[i];
+	    vector<int>& occList = (lt<0)? posC[i] :negC[i];
 	    for(int j =  pa+2; j < occList.size(); j++) {
 	        if (numP[occList[j]]== 1) {
 	            score++;
 	        }
 	    }
-	    if(assign[i]) lt = -vT;
-	    else lt = vT;
 		if(!(breaks[i] == computeBreakScore(lt,-1))){
 			cout<< "i : "<< i<<endl;
 			cout<< "score : "<< score<<endl;
