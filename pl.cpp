@@ -979,7 +979,7 @@ void Process<T>::debugCache(){
 	int cs, ce, vs, ve;
 	int vT;
 	for(int i= 0; i <numVs; i++){
-		assert(breaks[i] == computeBreakScore(assign[i],-1));
+		assert(breaks[i] == computeBreakScore(!assign[i],-1));
 	}
 	for(int i= cs; i <ce; i++){
 		if(numP[i]== 1){
