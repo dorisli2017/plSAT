@@ -561,6 +561,7 @@ void Process<T>::optimal(){
 		assign[i] = assignG[i];
 	}
 	(this->*setAssignment)(-1);
+	cout<< "after setAssignment"<<endl;
 	debugCache();
 	cout<< "in solve"<<endl;
 	solve();
