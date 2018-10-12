@@ -548,13 +548,19 @@ void Process<T>::optimal(){
 	int start, end;
 	int odd = omp_get_thread_num();
 	(this->*initAssignment)(odd);
+	debugCache(odd);
 	solvePart(odd);
+	debugCache(odd);
 	tol++;
 	#pragma omp barrier
+	cout<< "over barrier"<<endl;
 	for(int i = 0; i < numVs; i++){
 		assign[i] = assignG[i];
 	}
 	(this->*setAssignment)(-1);
+	for(int i = 0; i < pa+1; i++){
+		debugCache(i);
+	}
 	solve();
 }
 
@@ -612,6 +618,7 @@ int Process<T>::getFlipLiteral57(int cIndex, int partition){
 	int greedyLiteral = 0, randomLiteral;
 	for (std::vector<int>::const_iterator i = vList.begin(); i != vList.end(); ++i){
 		bre = breaks[abs(*i)];
+		assert(bre>=0);
 		if(bre == 0){
 			clauseQ.push_back(*i);
 		}
@@ -698,6 +705,7 @@ void Process<T>::flip57(int literal,int partition){
 		num = numP[cla];
 		if(num == 1){
 			breaks[aIndex]--;
+			assert(breaks[aIndex]>=0);
 			unsat.push_back(cla);
 		}
 		else if(num == 2){
@@ -723,6 +731,7 @@ void Process<T>::flip57(int literal,int partition){
 		}
 		else if(num == 1){
 			breaks[critVar[cla]]--;
+			assert(breaks[critVar[cla]]>=0);
 		}
 		numP[cla]++;
 	}
@@ -967,5 +976,25 @@ void Process<T>::debugSolution(int partition){
 		}
 		count = 0;
 	}
-	//cout<< "Solution in "<< partition<<"tested"<<endl;
+	cout<< "Solution in "<< partition<<"tested"<<endl;
+}
+template<class T>
+void Process<T>::debugCache(int partition){
+	if(maxL <= 3) return;
+	int cs, ce, vs, ve;
+	int vT;
+	cs = numC[partition];
+	ce = numC[partition+1];
+	vs = numV[partition];
+	ve = numV[partition+1];
+	for(int i= vs; i <ve; i++){
+		assert(breaks[i]>=0);
+	}
+	for(int i= cs; i <ce; i++){
+		if(numP[i]== 1){
+			vT = critVar[i];
+			assert(breaks[vT]>=1);
+		}
+	}
+	cout<< "Cache in "<< partition<<"tested"<<endl;
 }

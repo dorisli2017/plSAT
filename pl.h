@@ -120,6 +120,7 @@ public:
 	void printNumP();
 	void debugAssign();
 	void debugSolution(int partition);
+	void debugCache(int partition);
 	void test();
 };
 #endif /* MAIN_H_ */
