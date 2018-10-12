@@ -979,6 +979,12 @@ void Process<T>::debugCache(){
 	int cs, ce, vs, ve;
 	int vT;
 	for(int i= 0; i <numVs; i++){
+		if(!(breaks[i] == computeBreakScore(!assign[i],-1))){
+			cout<< "i : "<< i<<endl;
+			cout<< "break : "<< breaks[i]<<endl;
+			cout<< "compute : "<< computeBreakScore(!assign[i],-1)<<endl;
+		}
+
 		assert(breaks[i] == computeBreakScore(!assign[i],-1));
 	}
 	for(int i= cs; i <ce; i++){
