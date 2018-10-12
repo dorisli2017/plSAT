@@ -996,9 +996,9 @@ void Process<T>::debugCache(){
 			cout<< "break : "<< breaks[i]<<endl;
 			cout<< "compute : "<< computeBreakScore(!assign[i],-1)<<endl;
 		}
-		assert(score == computeBreakScore(!assign[i],-1));
+		assert(score == computeBreakScore(lt,-1));
 		assert(breaks[i] == score);
-		assert(breaks[i] == computeBreakScore(!assign[i],-1));
+		assert(breaks[i] == computeBreakScore(lt,-1));
 	}
 	for(int i= cs; i <ce; i++){
 		if(numP[i]== 1){
