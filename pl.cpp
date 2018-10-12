@@ -979,16 +979,18 @@ void Process<T>::debugCache(){
 	debugSolution(-1);
 	if(maxL <= 3) return;
 	int cs, ce, vs, ve;
-	int vT,score;
+	int vT,score,lt;
 	for(int i= 1; i <numVs; i++){
 		score = 0;
-	    vector<int>& occList =(assign[i] > 0)? posC[i] :negC[i];
+	    vector<int>& occList = assign[i]? posC[i] :negC[i];
 	    for(int i =  pa+2; i < occList.size(); i++) {
 	        if (numP[occList[i]]== 1) {
 	            score++;
 	        }
 	    }
-		if(!(breaks[i] == computeBreakScore(!assign[i],-1))){
+	    if(assign[i]) lt = -vT;
+	    else lt = vT;
+		if(!(breaks[i] == computeBreakScore(lt,-1))){
 			cout<< "i : "<< i<<endl;
 			cout<< "assignment of i is "<< assign[i]<<endl;
 			cout<< "break : "<< breaks[i]<<endl;
