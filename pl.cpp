@@ -472,7 +472,6 @@ void Process<T>::setAssignment57(int partition){
    			}
    		}
    	}
-   	debugCache();
 }
 
 template<class T>
