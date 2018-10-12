@@ -502,8 +502,10 @@ void Process<T>::solve(){
 		unsat[randC]=unsat.back();
 		unsat.pop_back();
 		cout<< "before flip"<< endl;
+		debugCache();
 		(this->*flip)(flipLindex,-1);
 		cout<< "after flip"<< endl;
+		debugCache();
 		tabuS[abs(flipLindex)]++;
 	}
 }
@@ -559,7 +561,6 @@ void Process<T>::optimal(){
 	}
 	(this->*setAssignment)(-1);
 	cout<< "after setAssignment"<<endl;
-	debugCache();
 	cout<< "in solve"<<endl;
 	solve();
 }
