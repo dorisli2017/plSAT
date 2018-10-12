@@ -732,10 +732,13 @@ void Process<T>::flip57(int literal,int partition){
 		}
 		else if(num == 1){
 			breaks[critVar[cla]]--;
-			assert(breaks[critVar[cla]]>=0);
 		}
 		numP[cla]++;
 	}
+	for(int i = 1; i < numVs; i++){
+		assert(breaks[i] >= 0);
+	}
+
 }
 
 void testLine(string line, bool* assignG){
