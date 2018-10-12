@@ -498,14 +498,14 @@ void Process<T>::solve(){
 			randC = (this->*randINT)()%size;
 			flipCindex = unsat[randC];
 		}
-		debugCache(-1);
+		debugCache();
 		int flipLindex = (this->*getFlipLiteral)(flipCindex,-1);
 		unsat[randC]=unsat.back();
 		unsat.pop_back();
 		cout<< "before flip"<< endl;
-		debugCache(-1);
+		debugCache();
 		(this->*flip)(flipLindex,-1);
-		debugCache(-1);
+		debugCache();
 		cout<< "after flip"<< endl;
 		tabuS[abs(flipLindex)]++;
 	}
@@ -561,7 +561,7 @@ void Process<T>::optimal(){
 		assign[i] = assignG[i];
 	}
 	(this->*setAssignment)(-1);
-	debugCache(-1);
+	debugCache();
 	cout<< "in solve"<<endl;
 	solve();
 }
@@ -574,7 +574,7 @@ int Process<T>::getFlipLiteral3(int cIndex, int partition){
 	double sum=0,randD;
 	int greedyLiteral = 0, randomLiteral;
 	for (std::vector<int>::const_iterator i = vList.begin(); i != vList.end(); ++i){
-		bre = computeBreakScore(*i,partition);
+		bre = computeBreak(*i,partition);
 		if(bre == 0){
 			clauseQ.push_back(*i);
 		}
@@ -791,6 +791,7 @@ int Process<T>::computeBreakScore(int literal,int partition){
     vector<int>& occList =(literal < 0)? posC[aIndex] :negC[aIndex];
     int start, end;
     start = occList[0];end = occList[pa+1];
+    assert(start == pa+2);
     for(int i = start; i < end; i++) {
         if (numP[occList[i]]== 1) {
             score++;
@@ -975,19 +976,12 @@ void Process<T>::debugSolution(int partition){
 	cout<< "Solution in "<< partition<<"tested"<<endl;
 }
 template<class T>
-void Process<T>::debugCache(int partition){
+void Process<T>::debugCache(){
 	if(maxL <= 3) return;
 	int cs, ce, vs, ve;
 	int vT;
-	if(partition > 0){
-		cs = numC[partition];
-		ce = numC[partition+1];
-		vs = numV[partition];
-		ve = numV[partition+1];
-	}
-	else{ cs = 0; vs = 0; ce = numCs; ve = numVs;}
-	for(int i= vs; i <ve; i++){
-		assert(breaks[i]>=0);
+	for(int i= 0; i <numVs; i++){
+		assert(breaks[i] == computeBreakScore(i,-1));
 	}
 	for(int i= cs; i <ce; i++){
 		if(numP[i]== 1){
@@ -995,5 +989,5 @@ void Process<T>::debugCache(int partition){
 			assert(breaks[vT]>=1);
 		}
 	}
-	cout<< "Cache in "<< partition<<"tested"<<endl;
+	cout<< "Cache tested"<<endl;
 }
