@@ -480,7 +480,7 @@ void Process<T>::solve(){
 	while(true){
 		if (unsat.size()== 0){
 			cout<< "SATIS"<<endl;
-			test();
+			//test();
 			abort();
 		}
 		int size = unsat.size();
@@ -492,7 +492,7 @@ void Process<T>::solve(){
 			size--;
 			if (size == 0){
 				cout<< "SATIS"<<endl;
-				test();
+				//test();
 				abort();
 				}
 			randC = (this->*randINT)()%size;
