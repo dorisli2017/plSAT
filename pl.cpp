@@ -574,7 +574,7 @@ int Process<T>::getFlipLiteral3(int cIndex, int partition){
 	double sum=0,randD;
 	int greedyLiteral = 0, randomLiteral;
 	for (std::vector<int>::const_iterator i = vList.begin(); i != vList.end(); ++i){
-		bre = computeBreak(*i,partition);
+		bre = (this->*Process::computeBreak)(*i,partition);
 		if(bre == 0){
 			clauseQ.push_back(*i);
 		}
