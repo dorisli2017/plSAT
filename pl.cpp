@@ -556,8 +556,6 @@ void Process<T>::optimal(){
 		assign[i] = assignG[i];
 	}
 	(this->*setAssignment)(-1);
-	cout<< "after setAssignment"<<endl;
-	cout<< "in solve"<<endl;
 	solve();
 }
 
@@ -596,7 +594,7 @@ int Process<T>::getFlipLiteral3(int cIndex, int partition){
 
 	}
 	randD = ((double)(this->*randINT)()/RAND_MAX)*sum;
-	assert(randD >= 0);
+	//assert(randD >= 0);
 	for(int i = 0; i < j;i++){
 		if(probs[i]< randD){
 			continue;
@@ -615,7 +613,7 @@ int Process<T>::getFlipLiteral57(int cIndex, int partition){
 	int greedyLiteral = 0, randomLiteral;
 	for (std::vector<int>::const_iterator i = vList.begin(); i != vList.end(); ++i){
 		bre = breaks[abs(*i)];
-		assert(bre>=0);
+		//assert(bre>=0);
 		if(bre == 0){
 			clauseQ.push_back(*i);
 		}
@@ -648,7 +646,7 @@ int Process<T>::getFlipLiteral57(int cIndex, int partition){
 
 	}
 	randD = ((double)(this->*randINT)()/RAND_MAX)*sum;
-	assert(randD >= 0);
+	//assert(randD >= 0);
 	for(int i = 0; i < j;i++){
 		if(probs[i]< randD){
 			continue;
@@ -730,9 +728,11 @@ void Process<T>::flip57(int literal,int partition){
 		}
 		numP[cla]++;
 	}
+	/*
 	for(int i = 1; i < numVs; i++){
 		assert(breaks[i] >= 0);
 	}
+	*/
 
 }
 
@@ -788,14 +788,13 @@ int Process<T>::computeBreakScore(int literal,int partition){
     vector<int>& occList =(literal < 0)? posC[aIndex] :negC[aIndex];
     int start, end;
     start = occList[0];end = occList[pa+1];
-    assert(start == pa+2);
-    assert(end == occList.size());
+   // assert(start == pa+2);
+    //assert(end == occList.size());
     for(int i = start; i < end; i++) {
         if (numP[occList[i]]== 1) {
             score++;
         }
     }
-	//cout<< "out make "<<endl;
     return score;
 }
 void printVector(vector<int>& vec){
