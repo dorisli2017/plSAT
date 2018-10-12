@@ -501,11 +501,7 @@ void Process<T>::solve(){
 		int flipLindex = (this->*getFlipLiteral)(flipCindex,-1);
 		unsat[randC]=unsat.back();
 		unsat.pop_back();
-		cout<< "before flip"<< endl;
-		debugCache();
 		(this->*flip)(flipLindex,-1);
-		cout<< "after flip"<< endl;
-		debugCache();
 		tabuS[abs(flipLindex)]++;
 	}
 }
