@@ -476,7 +476,6 @@ void Process<T>::setAssignment57(int partition){
 
 template<class T>
 void Process<T>::solve(){
-	debugCache(-1);
 	computeBreak = &Process::computeBreakScore;
 	while(true){
 		if (unsat.size()== 0){
@@ -503,9 +502,12 @@ void Process<T>::solve(){
 		int flipLindex = (this->*getFlipLiteral)(flipCindex,-1);
 		unsat[randC]=unsat.back();
 		unsat.pop_back();
-		(this->*flip)(flipLindex,-1);
-		tabuS[abs(flipLindex)]++;
+		cout<< "before flip"<< endl;
 		debugCache(-1);
+		(this->*flip)(flipLindex,-1);
+		debugCache(-1);
+		cout<< "after flip"<< endl;
+		tabuS[abs(flipLindex)]++;
 	}
 }
 template<class T>
@@ -552,17 +554,13 @@ void Process<T>::optimal(){
 	int start, end;
 	int odd = omp_get_thread_num();
 	(this->*initAssignment)(odd);
-	debugCache(odd);
 	solvePart(odd);
-	debugCache(odd);
 	tol++;
 	#pragma omp barrier
-	cout<< "over barrier"<<endl;
 	for(int i = 0; i < numVs; i++){
 		assign[i] = assignG[i];
 	}
 	(this->*setAssignment)(-1);
-	cout<< "set global assignment"<<endl;
 	debugCache(-1);
 	cout<< "in solve"<<endl;
 	solve();
@@ -920,12 +918,6 @@ void debugStructure(){
 	for(int i =0; i < pa; i++){
 		for(int j =numC[i]; j < numC[i+1]; j++){
 			for(int k =0; k <clauses[j].size(); k++){
-				/*cout<< "j: "<< j<<endl;
-				cout<< "clauses J:"<<endl;
-				printVector(clauses[j]);
-				cout<< "k: "<< k<<endl;
-				cout<< "i: "<< i<<endl;
-				*/
 				assert(abs(clauses[j][k])>= numV[i]);
 				assert(abs(clauses[j][k])< numV[i+1]);
 			}
