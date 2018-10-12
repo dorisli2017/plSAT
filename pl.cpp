@@ -992,9 +992,10 @@ void Process<T>::debugCache(){
 	    else lt = vT;
 		if(!(breaks[i] == computeBreakScore(lt,-1))){
 			cout<< "i : "<< i<<endl;
+			cout<< "score : "<< score<<endl;
 			cout<< "assignment of i is "<< assign[i]<<endl;
 			cout<< "break : "<< breaks[i]<<endl;
-			cout<< "compute : "<< computeBreakScore(!assign[i],-1)<<endl;
+			cout<< "compute : "<< computeBreakScore(lt,-1)<<endl;
 		}
 		assert(score == computeBreakScore(lt,-1));
 		assert(breaks[i] == score);
