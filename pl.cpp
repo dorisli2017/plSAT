@@ -983,8 +983,8 @@ void Process<T>::debugCache(){
 	for(int i= 1; i <numVs; i++){
 		score = 0;
 	    vector<int>& occList = assign[i]? posC[i] :negC[i];
-	    for(int i =  pa+2; i < occList.size(); i++) {
-	        if (numP[occList[i]]== 1) {
+	    for(int j =  pa+2; j < occList.size(); j++) {
+	        if (numP[occList[j]]== 1) {
 	            score++;
 	        }
 	    }
