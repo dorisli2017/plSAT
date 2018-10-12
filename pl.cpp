@@ -981,8 +981,8 @@ void Process<T>::debugCache(){
 	int cs, ce, vs, ve;
 	int vT,score,lt;
 	for(int i= 1; i <numVs; i++){
-	    if(assign[i]) lt = -vT;
-	    else lt = vT;
+	    if(assign[i]) lt = -i;
+	    else lt = i;
 		score = 0;
 	    vector<int>& occList = (lt<0)? posC[i] :negC[i];
 	    for(int j =  pa+2; j < occList.size(); j++) {
