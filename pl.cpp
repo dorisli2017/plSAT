@@ -191,6 +191,7 @@ void readFile(const char* fileName){
 	string buff;
 	char head;
    	getline(fp,buff);
+   	getline(fp,buff);
    	while(!fp.eof()){
 		//cout<<buff<<endl;
 		//todo:parseLine
@@ -475,6 +476,7 @@ void Process<T>::setAssignment57(int partition){
 
 template<class T>
 void Process<T>::solve(){
+	debugCache(-1);
 	computeBreak = &Process::computeBreakScore;
 	while(true){
 		if (unsat.size()== 0){
@@ -497,11 +499,13 @@ void Process<T>::solve(){
 			randC = (this->*randINT)()%size;
 			flipCindex = unsat[randC];
 		}
+		debugCache(-1);
 		int flipLindex = (this->*getFlipLiteral)(flipCindex,-1);
 		unsat[randC]=unsat.back();
 		unsat.pop_back();
 		(this->*flip)(flipLindex,-1);
 		tabuS[abs(flipLindex)]++;
+		debugCache(-1);
 	}
 }
 template<class T>
@@ -558,9 +562,9 @@ void Process<T>::optimal(){
 		assign[i] = assignG[i];
 	}
 	(this->*setAssignment)(-1);
-	for(int i = 0; i < pa+1; i++){
-		debugCache(i);
-	}
+	cout<< "set global assignment"<<endl;
+	debugCache(-1);
+	cout<< "in solve"<<endl;
 	solve();
 }
 
@@ -983,10 +987,13 @@ void Process<T>::debugCache(int partition){
 	if(maxL <= 3) return;
 	int cs, ce, vs, ve;
 	int vT;
-	cs = numC[partition];
-	ce = numC[partition+1];
-	vs = numV[partition];
-	ve = numV[partition+1];
+	if(partition > 0){
+		cs = numC[partition];
+		ce = numC[partition+1];
+		vs = numV[partition];
+		ve = numV[partition+1];
+	}
+	else{ cs = 0; vs = 0; ce = numCs; ve = numVs;}
 	for(int i= vs; i <ve; i++){
 		assert(breaks[i]>=0);
 	}
