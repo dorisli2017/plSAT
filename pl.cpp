@@ -978,7 +978,7 @@ void Process<T>::debugCache(){
 	if(maxL <= 3) return;
 	int cs, ce, vs, ve;
 	int vT;
-	for(int i= 0; i <numVs; i++){
+	for(int i= 1; i <numVs; i++){
 		if(!(breaks[i] == computeBreakScore(!assign[i],-1))){
 			cout<< "i : "<< i<<endl;
 			cout<< "break : "<< breaks[i]<<endl;
