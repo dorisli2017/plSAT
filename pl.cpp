@@ -988,6 +988,7 @@ void Process<T>::debugCache(){
 	    vector<int>& occList = (lt<0)? posC[i] :negC[i];
 	    for(int j =  pa+2; j < occList.size(); j++) {
 	        if (numP[occList[j]]== 1) {
+	        	assert(critVar[occList[j]] == i);
 	            score++;
 	        }
 	    }
