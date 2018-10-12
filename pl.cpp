@@ -790,6 +790,7 @@ int Process<T>::computeBreakScore(int literal,int partition){
     int start, end;
     start = occList[0];end = occList[pa+1];
     assert(start == pa+2);
+    assert(end == occList.size());
     for(int i = start; i < end; i++) {
         if (numP[occList[i]]== 1) {
             score++;
