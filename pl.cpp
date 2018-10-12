@@ -975,16 +975,26 @@ void Process<T>::debugSolution(int partition){
 }
 template<class T>
 void Process<T>::debugCache(){
+	debugSolution(-1);
 	if(maxL <= 3) return;
 	int cs, ce, vs, ve;
-	int vT;
+	int vT,score;
 	for(int i= 1; i <numVs; i++){
+		score = 0;
+	    vector<int>& occList =(assign[i] > 0)? posC[i] :negC[i];
+	    for(int i =  pa+2; i < occList.size(); i++) {
+	        if (numP[occList[i]]== 1) {
+	            score++;
+	        }
+	    }
 		if(!(breaks[i] == computeBreakScore(!assign[i],-1))){
 			cout<< "i : "<< i<<endl;
+			cout<< "assignment of i is "<< assign[i]<<endl;
 			cout<< "break : "<< breaks[i]<<endl;
 			cout<< "compute : "<< computeBreakScore(!assign[i],-1)<<endl;
 		}
-
+		assert(score == computeBreakScore(!assign[i],-1));
+		assert(breaks[i] == score);
 		assert(breaks[i] == computeBreakScore(!assign[i],-1));
 	}
 	for(int i= cs; i <ce; i++){
