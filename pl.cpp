@@ -706,7 +706,6 @@ void Process<T>::flip57(int literal,int partition){
 		num = numP[cla];
 		if(num == 1){
 			breaks[aIndex]--;
-			assert(breaks[aIndex]>=0);
 			unsat.push_back(cla);
 		}
 		else if(num == 2){
@@ -980,7 +979,7 @@ void Process<T>::debugSolution(int partition){
 }
 template<class T>
 void Process<T>::debugCache(){
-	debugSolution(-1);
+//	debugSolution(-1);
 	if(maxL <= 3) return;
 	int cs, ce, vs, ve;
 	int vT,score,lt;
